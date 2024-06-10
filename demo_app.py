@@ -23,8 +23,7 @@ from utils import (
 client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
 # assistant = client.beta.assistants.retrieve(st.secrets["ASSISTANT_ID"])
 
-st.set_page_config(page_title="DAVE",
-                   page_icon="🕵️")
+st.set_page_config(page_title="CHARTER")
 
 # Apply custom CSS
 render_custom_css()
@@ -56,6 +55,11 @@ def load_data(uploaded_file):
     else:
         return data
 
+
+# UI
+st.subheader("🔍 CHARTER")
+st.subheader("Data Interrogation Platform for Management Consultants.\nBegin by uploading your tabular data in CSV format and the ask a query using the textbox below.")
+
 # TODO: Make this robust to uploads not from this dir.
 data_file = st.file_uploader("Upload some CSV data", type=("csv"))
 
@@ -73,12 +77,6 @@ if data_file:
                 }
             } 
         )
-
-    #  # Add the uploaded file to the assistant
-    # client.beta.assistants.files.create(assistant_id=st.secrets["ASSISTANT_ID"], file_id=uploaded_file.id)
-
-    # print(f"File '{uploaded_file.name}' uploaded and added to the assistant with ID: {st.secrets['ASSISTANT_ID']}")
-
     
     data = load_data(data_file)
     chat_placeholder = "How many rows is my data?"
@@ -90,9 +88,6 @@ if st.checkbox("Display raw data?", disabled=not data_file):
     st.subheader("Raw Data")
     st.dataframe(data)
 
-# UI
-st.subheader("🔮 DAVE: Data Analysis & Visualisation Engine")
-# st.markdown("This demo uses a data.gov.sg dataset on HDB resale prices.", help="[Source](https://beta.data.gov.sg/collections/189/datasets/d_ebc5ab87086db484f88045b47411ebc5/view)")
 text_box = st.empty()
 qn_btn = st.empty()
 
@@ -141,7 +136,7 @@ if qn_btn.button("Ask Charter"):
                                           event_handler=EventHandler(),
                                           temperature=0) as stream:
         stream.until_done()
-        st.toast("DAVE has finished analysing the data", icon="🕵️")
+        st.toast("Analysis Complete.")
 
     # Prepare the files for download
     with st.spinner("Preparing the files for download..."):
