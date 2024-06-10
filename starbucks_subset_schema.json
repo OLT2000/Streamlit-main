@@ -1,0 +1,125 @@
+{
+    "table": "survey_responses",
+    "columns": [
+      {
+        "name": "id",
+        "type": "INT",
+        "primaryKey": true
+      },
+      {
+        "name": "gender",
+        "type": "TINYINT",
+        "constraints": {
+          "check": "gender IN (0, 1)"
+        },
+        "encoding": {
+          "0": "Male",
+          "1": "Female"
+        }
+      },
+      {
+        "name": "age",
+        "type": "TINYINT",
+        "constraints": {
+          "check": "age IN (0, 1, 2, 3)"
+        },
+        "encoding": {
+          "0": "Below 20",
+          "1": "From 20 to 29",
+          "2": "From 30 to 39",
+          "3": "40 and above"
+        }
+      },
+      {
+        "name": "status",
+        "type": "TINYINT",
+        "constraints": {
+          "check": "status IN (0, 1, 2, 3)"
+        },
+        "encoding": {
+          "0": "Student",
+          "1": "Self-Employed",
+          "2": "Employed",
+          "3": "Housewife"
+        }
+      },
+      {
+        "name": "income",
+        "type": "TINYINT",
+        "constraints": {
+          "check": "income IN (0, 1, 2, 3, 4)"
+        },
+        "encoding": {
+          "0": "Less than RM25,000",
+          "1": "RM25,000 – RM50,000",
+          "2": "RM50,000 – RM100,000",
+          "3": "RM100,000 – RM150,000",
+          "4": "More than RM150,000"
+        }
+      },
+      {
+        "name": "visitNo",
+        "type": "TINYINT",
+        "constraints": {
+          "check": "visitNo IN (0, 1, 3, 4)"
+        },
+        "encoding": {
+          "0": "Daily",
+          "1": "Weekly",
+          "3": "Monthly",
+          "4": "Never"
+        }
+      },
+      {
+        "name": "method",
+        "type": "TINYINT",
+        "constraints": {
+          "check": "method IN (0, 1, 2, 3, 4)"
+        },
+        "encoding": {
+          "0": "Dine In",
+          "1": "Drive-thru",
+          "2": "Take away",
+          "3": "Never",
+          "4": "Others"
+        }
+      },
+      {
+        "name": "timeSpend",
+        "type": "TINYINT",
+        "constraints": {
+          "check": "timeSpend IN (0, 1, 2, 3, 4)"
+        },
+        "encoding": {
+          "0": "Below 30 mins",
+          "1": "30 mins to 1h",
+          "2": "1h to 2h",
+          "3": "2h to 3h",
+          "4": "More than 3h"
+        }
+      },
+      {
+        "name": "location",
+        "type": "TINYINT",
+        "constraints": {
+          "check": "location IN (0, 1, 2)"
+        },
+        "encoding": {
+          "0": "Within 1km",
+          "1": "1km to 3km",
+          "2": "More than 3km"
+        }
+      },
+      {
+        "name": "membershipCard",
+        "type": "TINYINT",
+        "constraints": {
+          "check": "membershipCard IN (0, 1)"
+        },
+        "encoding": {
+          "0": "Yes",
+          "1": "No"
+        }
+      }
+]
+}
