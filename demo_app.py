@@ -44,49 +44,89 @@ if "code_output" not in st.session_state:
 if "disabled" not in st.session_state:
     st.session_state.disabled = False
 
+
 @st.cache_data
-def load_data(uploaded_file):
+def load_data(uploaded_data_file):
     try:
-        data = pd.read_csv(uploaded_file)
+        data = pd.read_csv(uploaded_data_file)
 
     except Exception as e:
-        print(f"An unexpected error occurred: {e}")
+        print(f"An unexpected error occurred when loading data: {e}")
 
     else:
         return data
 
+# TODO: Implement functionality to map between multiple files/schema
+@st.cache_data
+def load_schema(schema_file):
+    try:
+        with open(schema_file, "r") as f:
+            schema = json.load(f)
+    
+    except Exception as e:
+        print(f"An unexpected error occurred when loading schema: {e}")
+
+    else:
+        return schema
 
 # UI
 st.subheader("🔍 CHARTER")
 st.subheader("Data Interrogation Platform for Management Consultants.\nBegin by uploading your tabular data in CSV format and the ask a query using the textbox below.")
 
-# TODO: Make this robust to uploads not from this dir.
-data_file = st.file_uploader("Upload some CSV data", type=("csv"))
+if "uploaded_file_ids" not in st.session_state:
+    st.session_state.uploaded_file_ids = []
 
-if data_file:
-    uploaded_file = client.files.create(
+# TODO: Make this robust to uploads not from this dir.
+# TODO: Upload intellisurvey xlsx and pre-process automatically.
+data_file = st.file_uploader("Upload some CSV data", type=("csv"))
+schema_flag = st.toggle("Use Column Schema?")
+schema_file = st.file_uploader("Upload a schema to support your analysis.", type=("json"), disabled=not schema_flag)
+
+
+if data_file is not None:
+    uploaded_file_ids = []
+    uploaded_data_file = client.files.create(
         file=open(data_file.name, "rb"), purpose="assistants"
     )
-    # st.secrets["FILE_ID"] = uploaded_file.id
+    uploaded_file_ids.append(uploaded_data_file.id)
+    # st.session_state.uploaded_file_ids.append(uploaded_data_file.id)
+    
+    if schema_file is not None:
+        uploaded_schema_file = client.files.create(
+            file=open(schema_file.name, "rb"), purpose="assistants"
+        )
+        # st.session_state.uploaded_file_ids.append(uploaded_schema_file.id)
+        uploaded_file_ids.append(uploaded_schema_file.id)
+
 
     assistant = client.beta.assistants.update(
         assistant_id=st.secrets["ASSISTANT_ID"],
         tool_resources={
             "code_interpreter": {
-            "file_ids": [uploaded_file.id]
+            "file_ids": uploaded_file_ids
                 }
             } 
         )
-    
-    data = load_data(data_file)
+        
+    # data = load_data(data_file)
     chat_placeholder = "How many rows is my data?"
+    st.session_state.disabled = False
     
 else:
+    st.session_state.disabled = True
     chat_placeholder = "Upload some CSV data to kick things off!"
+
+
+if schema_flag and not schema_file:
+    st.session_state.disabled = True
+
 
 if st.checkbox("Display raw data?", disabled=not data_file):
     st.subheader("Raw Data")
+    data = load_data(data_file)
     st.dataframe(data)
+
+
 
 text_box = st.empty()
 qn_btn = st.empty()
@@ -115,7 +155,7 @@ if qn_btn.button("Ask Charter"):
     # Update the thread to attach the file
     client.beta.threads.update(
                 thread_id=st.session_state.thread_id,
-                tool_resources={"code_interpreter": {"file_ids": [uploaded_file.id]}}
+                tool_resources={"code_interpreter": {"file_ids": uploaded_file_ids}}
             )
 
     if "text_boxes" not in st.session_state:
