@@ -19,6 +19,8 @@ from utils import (
     retrieve_assistant_created_files
     )
 
+from string import Template
+
 # Initialise the OpenAI client, and retrieve the assistant
 client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
 # assistant = client.beta.assistants.retrieve(st.secrets["ASSISTANT_ID"])
@@ -89,7 +91,13 @@ if data_file is not None:
         file=open(data_file.name, "rb"), purpose="assistants"
     )
     uploaded_file_ids.append(uploaded_data_file.id)
+    # print(uploaded_data_file.)
     # st.session_state.uploaded_file_ids.append(uploaded_data_file.id)
+
+    prompt_text = "You are an expert at data analysis using Python.\n" \
+        "Use your skills to answer user questions about the survey data uploaded to '{uploaded_data_file.filename}'. Each row constitutes a respondent to the survey and the columns map to individual survey questions.\n"
+    
+    # prompt_text = f"I have uploaded my tabular survey data to '{uploaded_data_file.filename}'."
     
     if schema_file is not None:
         uploaded_schema_file = client.files.create(
@@ -98,6 +106,32 @@ if data_file is not None:
         # st.session_state.uploaded_file_ids.append(uploaded_schema_file.id)
         uploaded_file_ids.append(uploaded_schema_file.id)
 
+        json_schema = [{
+                    "column_name": "The name of the column in the dataset.",
+                    "column_description": "The survey question associated with the above column.",
+                    "column_type": "The type of response - one of (quotas, date, radio, text, checkbox). All options are single select except for checkbox.",
+                    "encodings": {
+                        "code": "Original value used in the survey."
+                    }
+                }]
+
+        schema_prompt_text = f"\nA schema file has also been uploaded to '{uploaded_schema_file.filename}'."# with the following format:\n{json.dumps(json_schema, indent=4)}\n\nUse the following guidelines to improve your usage of the schema:\n" \
+        #     "- The schema will only be in the form of a JSON array object and contain the 4 above key-value pairs.\n" \
+        #     "- When the column type is text, quotas, date or radio, each element of the schema maps to exactly one column in the data set.\n" \
+        #     "- When the column type is checkbox, each element in the schema maps to multiple columns in the data set according to the encodings. That is, if the element with column_name 'COLUMN' has the encodings {1: 'value', 2: 'value2', 3: 'value3'}, then the data will have three columns titled 'COLUMN.1', 'COLUMN.2' and 'COLUMN.3'\n" \
+        #     "- Please read this schema BEFORE performing any analysis.\n" \
+        #     "- Use the schema to further understand the user's question and identify relevant columns based on their description, name and encodings.\n\n"
+        
+        prompt_text += schema_prompt_text
+
+    # plot_guidelines = "When the user requests a visual analysis, ensure that you ALWAYS follow the Plot Guidelines below.\n\n===Plot Guidelines\n" \
+    #     "- Please ensure you use Plotly and only Plotly.\n" \
+    #     "- DO NOT USE MATPLOTLIB\n" \
+    #     "- Apply a dark theme to all plots so that they match the UI.\n" \
+    #     "- Render the plotly figure within the chat so that a user can interact with the data."
+    #     # "- Ensure that you replace the usual plotly ```python fig.show()``` with ```python st.plotly_chart(fig, theme='streamlit', use_container_width=True)```"
+    # prompt_text += plot_guidelines
+    # prompt_text = ""
 
     assistant = client.beta.assistants.update(
         assistant_id=st.secrets["ASSISTANT_ID"],
@@ -127,7 +161,6 @@ if st.checkbox("Display raw data?", disabled=not data_file):
     st.dataframe(data)
 
 
-
 text_box = st.empty()
 qn_btn = st.empty()
 
@@ -137,9 +170,9 @@ if qn_btn.button("Ask Charter"):
     text_box.empty()
     qn_btn.empty()
 
-    if moderation_endpoint(question):
-        st.warning("Your question has been flagged. Refresh page to try again.")
-        st.stop()
+    # if moderation_endpoint(question):
+    #     st.warning("Your question has been flagged. Refresh page to try again.")
+    #     st.stop()
 
     # if is_not_question(question):
     #     st.warning("Please ask a question. Refresh page to try again.")
@@ -160,7 +193,15 @@ if qn_btn.button("Ask Charter"):
 
     if "text_boxes" not in st.session_state:
         st.session_state.text_boxes = []
-        
+
+    # TODO: Consider how the template impacts chat history.
+    print(prompt_text)
+    client.beta.threads.messages.create(
+        thread_id=st.session_state.thread_id,
+        role="assistant",
+        content=prompt_text
+    )
+
     client.beta.threads.messages.create(
         thread_id=st.session_state.thread_id,
         role="user",
