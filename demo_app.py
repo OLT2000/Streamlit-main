@@ -95,7 +95,7 @@ if data_file is not None:
     # st.session_state.uploaded_file_ids.append(uploaded_data_file.id)
 
     prompt_text = "You are an expert at data analysis using Python.\n" \
-        "Use your skills to answer user questions about the survey data uploaded to '{uploaded_data_file.filename}'. Each row constitutes a respondent to the survey and the columns map to individual survey questions.\n"
+        f"Use your skills to answer questions about the survey data stored in the location '/mnt/data/{uploaded_data_file.id}'. Each row constitutes a respondent to the survey and the columns map to individual survey questions.\n"
     
     # prompt_text = f"I have uploaded my tabular survey data to '{uploaded_data_file.filename}'."
     
@@ -115,7 +115,7 @@ if data_file is not None:
                     }
                 }]
 
-        schema_prompt_text = f"\nA schema file has also been uploaded to '{uploaded_schema_file.filename}'."# with the following format:\n{json.dumps(json_schema, indent=4)}\n\nUse the following guidelines to improve your usage of the schema:\n" \
+        schema_prompt_text = f"\nA schema file has also been uploaded to '/mnt/data/{uploaded_schema_file.id}'."# with the following format:\n{json.dumps(json_schema, indent=4)}\n\nUse the following guidelines to improve your usage of the schema:\n" \
         #     "- The schema will only be in the form of a JSON array object and contain the 4 above key-value pairs.\n" \
         #     "- When the column type is text, quotas, date or radio, each element of the schema maps to exactly one column in the data set.\n" \
         #     "- When the column type is checkbox, each element in the schema maps to multiple columns in the data set according to the encodings. That is, if the element with column_name 'COLUMN' has the encodings {1: 'value', 2: 'value2', 3: 'value3'}, then the data will have three columns titled 'COLUMN.1', 'COLUMN.2' and 'COLUMN.3'\n" \
@@ -123,6 +123,7 @@ if data_file is not None:
         #     "- Use the schema to further understand the user's question and identify relevant columns based on their description, name and encodings.\n\n"
         
         prompt_text += schema_prompt_text
+        print(uploaded_file_ids)
 
     # plot_guidelines = "When the user requests a visual analysis, ensure that you ALWAYS follow the Plot Guidelines below.\n\n===Plot Guidelines\n" \
     #     "- Please ensure you use Plotly and only Plotly.\n" \
