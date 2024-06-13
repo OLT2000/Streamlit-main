@@ -5,7 +5,7 @@ import os
 import json
 import pandas as pd
 import streamlit as st
-from utils.plot_utils import create_bar_chart
+from utils.plot_utils import create_bar_chart, plotly_json_to_tc
 import plotly.express as px
 from plotly import graph_objects as go
 from openai import OpenAI
@@ -21,90 +21,6 @@ from utils.llm_utils import (
     retrieve_assistant_created_files
 )
 
-
-# def generate_thinkcell_json(column_data, template_path, ppttc_path, x_column_data=None, selected_x_values=None):
-#     def type_helper(variable):
-#         var = type(variable)
-#         if pd.api.types.is_string_dtype(var):
-#             return "string"
-        
-#         elif pd.api.types.is_numeric_dtype(var):
-#             return "number"
-        
-#         elif pd.api.types.is_datetime64_dtype(var):
-#             return "datetime"
-        
-#         else:
-#             raise TypeError(f"Cannot determine appropriate dtype of {var}.\nVariable is of type {type(var)}")
-    
-#     # Reverse the color scheme
-#     reversed_colors = colors[::-1]
-#     single_column_color = "#034b6f"
-#     print(column_data, "\n\n")
-#     print(json.dumps([
-#                         [{"string": "Category"}] + [{"string": str(row[0])} for row in column_data.values],
-#                         [None] * (len(column_data) + 1),
-#                         [{"string": "Count"}] + [
-#                             {"number": int(row[1]), "fill": single_column_color} for row in column_data.values
-#                         ]
-#                     ], indent=4))
-    
-#     table = [
-#         [
-#             {type_helper(col): col},
-#             *[{type_helper(val): val} for val in column_data[col].to_list()]
-#         ] for col in column_data
-#     ]
-
-#     if x_column_data is None:
-#         if selected_x_values:
-#             column_data = column_data[column_data[column_data.columns[0]].isin(selected_x_values)]
-#         chart_data = {
-#             "template": template_path,
-#             "data": [
-#                 {
-#                     "name": "Chart1",
-#                     "table": [
-#                         [{"string": "Category"}] + [{"string": str(row[0])} for row in column_data.values],
-#                         [None] * (len(column_data) + 1),
-#                         [{"string": "Count"}] + [
-#                             {"number": int(row[1]), "fill": single_column_color} for row in column_data.values
-#                         ]
-#                     ]
-#                 }
-#             ]
-#         }
-#     else:
-#         if selected_x_values:
-#             x_column_data = x_column_data[x_column_data[x_column_data.columns[0]].isin(selected_x_values)]
-#             column_data = column_data[column_data[column_data.columns[0]].isin(selected_x_values)]
-#         categories = [{"string": str(x)} for x in x_column_data[x_column_data.columns[0]]]
-#         series = [{"string": str(col)} for col in column_data.columns[1:]]
-
-#         table_data = []
-#         for i in range(len(series)):
-#             row = [{"string": series[i]["string"]}] + [
-#                 {"number": int(column_data.iloc[j, i+1]), "fill": reversed_colors[i % len(reversed_colors)]} for j in range(len(categories))
-#             ]
-#             table_data.append(row)
-
-#         chart_data = {
-#             "template": template_path,
-#             "data": [
-#                 {
-#                     "name": "Chart1",
-#                     "table": [
-#                         [{"string": "Category"}] + categories,
-#                         [None] * (len(categories) + 1),
-#                         *table_data
-#                     ]
-#                 }
-#             ]
-#         }
-
-#     json_output = json.dumps([chart_data], indent=4)
-#     with open(ppttc_path, 'w') as file:
-#         file.write(json_output)
 
 # Initialise the OpenAI client, and retrieve the assistant
 client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
@@ -324,9 +240,16 @@ elif page == "Analysis":
             # )
             st.plotly_chart(fig)
 
-            export_btn = st.button("Export to Think-Cell.")
-            if export_btn:
-                pass
+
+            # export_btn = st.button("Export to Think-Cell.")
+            # if export_btn:
+            #     pass
+            st.download_button(
+                label="Export to Think-Cell",
+                file_name="plotly-thinkcell.ppttc",
+                mime="application/json",
+                data=plotly_json_to_tc(fig_json=fig.to_dict()),
+            )
 
     else:
         st.write("No files have been uploaded yet.")
