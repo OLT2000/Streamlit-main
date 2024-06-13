@@ -6,7 +6,7 @@ import os
 import streamlit as st
 from openai import OpenAI
 from openai.types.beta.thread_create_params import CodeInterpreterToolParam
-from utils import (
+from utils.llm_utils import (
     delete_files,
     delete_thread,
     EventHandler,
