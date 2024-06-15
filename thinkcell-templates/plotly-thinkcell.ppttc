@@ -1,0 +1,89 @@
+[
+    {
+        "template": "template.pptx",
+        "data": [
+            {
+                "name": "Chart1",
+                "table": [
+                    [
+                        {
+                            "string": "Count"
+                        },
+                        {
+                            "string": "Female"
+                        },
+                        {
+                            "string": "Male"
+                        }
+                    ],
+                    [],
+                    [
+                        {
+                            "string": "RM50,000 - RM100,000"
+                        },
+                        {
+                            "number": 7,
+                            "fill": "#00a9f4"
+                        },
+                        {
+                            "number": 10,
+                            "fill": "#00a9f4"
+                        }
+                    ],
+                    [
+                        {
+                            "string": "RM25,000 - RM50,000"
+                        },
+                        {
+                            "number": 16,
+                            "fill": "#027ab1"
+                        },
+                        {
+                            "number": 9,
+                            "fill": "#027ab1"
+                        }
+                    ],
+                    [
+                        {
+                            "string": "RM100,000 - RM150,000"
+                        },
+                        {
+                            "number": 0,
+                            "fill": "#d0d0d0"
+                        },
+                        {
+                            "number": 3,
+                            "fill": "#d0d0d0"
+                        }
+                    ],
+                    [
+                        {
+                            "string": "More than RM150,000"
+                        },
+                        {
+                            "number": 0,
+                            "fill": "#aae6f0"
+                        },
+                        {
+                            "number": 6,
+                            "fill": "#aae6f0"
+                        }
+                    ],
+                    [
+                        {
+                            "string": "Less than RM25,000"
+                        },
+                        {
+                            "number": 42,
+                            "fill": "#034b6f"
+                        },
+                        {
+                            "number": 29,
+                            "fill": "#034b6f"
+                        }
+                    ]
+                ]
+            }
+        ]
+    }
+]

@@ -1,0 +1,37 @@
+[
+    {
+        "template": "template.pptx",
+        "data": [
+            {
+                "name": "Chart1",
+                "table": [
+                    [
+                        {
+                            "string": "gender"
+                        },
+                        {
+                            "number": 1
+                        },
+                        {
+                            "number": 0
+                        }
+                    ],
+                    [],
+                    [
+                        {
+                            "string": "count"
+                        },
+                        {
+                            "number": 59,
+                            "fill": "#d0d0d0"
+                        },
+                        {
+                            "number": 54,
+                            "fill": "#d0d0d0"
+                        }
+                    ]
+                ]
+            }
+        ]
+    }
+]

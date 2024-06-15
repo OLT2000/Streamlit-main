@@ -1,0 +1,65 @@
+[
+    {
+        "template": "template.pptx",
+        "data": [
+            {
+                "name": "Chart1",
+                "table": [
+                    [
+                        {
+                            "string": "Category"
+                        },
+                        {
+                            "string": "0"
+                        },
+                        {
+                            "string": "1"
+                        },
+                        {
+                            "string": "2"
+                        },
+                        {
+                            "string": "3"
+                        },
+                        {
+                            "string": "4"
+                        }
+                    ],
+                    [
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null
+                    ],
+                    [
+                        {
+                            "string": "Count"
+                        },
+                        {
+                            "number": 65,
+                            "fill": "#034b6f"
+                        },
+                        {
+                            "number": 23,
+                            "fill": "#034b6f"
+                        },
+                        {
+                            "number": 17,
+                            "fill": "#034b6f"
+                        },
+                        {
+                            "number": 3,
+                            "fill": "#034b6f"
+                        },
+                        {
+                            "number": 5,
+                            "fill": "#034b6f"
+                        }
+                    ]
+                ]
+            }
+        ]
+    }
+]

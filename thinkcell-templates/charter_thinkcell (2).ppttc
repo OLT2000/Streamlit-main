@@ -1,0 +1,135 @@
+[
+    {
+        "template": "template.pptx",
+        "data": [
+            {
+                "name": "Chart1",
+                "table": [
+                    [
+                        {
+                            "string": "3. Are you currently....?"
+                        },
+                        {
+                            "string": "Employed"
+                        },
+                        {
+                            "string": "Housewife"
+                        },
+                        {
+                            "string": "Self-employed"
+                        },
+                        {
+                            "string": "Student"
+                        }
+                    ],
+                    [],
+                    [
+                        {
+                            "string": "More than RM150,000"
+                        },
+                        {
+                            "number": 2.0,
+                            "fill": "#d0d0d0"
+                        },
+                        {
+                            "number": 0.0,
+                            "fill": "#d0d0d0"
+                        },
+                        {
+                            "number": 3.0,
+                            "fill": "#d0d0d0"
+                        },
+                        {
+                            "number": 1.0,
+                            "fill": "#d0d0d0"
+                        }
+                    ],
+                    [
+                        {
+                            "string": "RM100,000 - RM150,000"
+                        },
+                        {
+                            "number": 2.0,
+                            "fill": "#aae6f0"
+                        },
+                        {
+                            "number": 0.0,
+                            "fill": "#aae6f0"
+                        },
+                        {
+                            "number": 1.0,
+                            "fill": "#aae6f0"
+                        },
+                        {
+                            "number": 0.0,
+                            "fill": "#aae6f0"
+                        }
+                    ],
+                    [
+                        {
+                            "string": "RM50,000 - RM100,000"
+                        },
+                        {
+                            "number": 11.0,
+                            "fill": "#00a9f4"
+                        },
+                        {
+                            "number": 1.0,
+                            "fill": "#00a9f4"
+                        },
+                        {
+                            "number": 4.0,
+                            "fill": "#00a9f4"
+                        },
+                        {
+                            "number": 1.0,
+                            "fill": "#00a9f4"
+                        }
+                    ],
+                    [
+                        {
+                            "string": "RM25,000 - RM50,000"
+                        },
+                        {
+                            "number": 21.0,
+                            "fill": "#027ab1"
+                        },
+                        {
+                            "number": 0.0,
+                            "fill": "#027ab1"
+                        },
+                        {
+                            "number": 4.0,
+                            "fill": "#027ab1"
+                        },
+                        {
+                            "number": 0.0,
+                            "fill": "#027ab1"
+                        }
+                    ],
+                    [
+                        {
+                            "string": "Less than RM25,000"
+                        },
+                        {
+                            "number": 25.0,
+                            "fill": "#034b6f"
+                        },
+                        {
+                            "number": 1.0,
+                            "fill": "#034b6f"
+                        },
+                        {
+                            "number": 5.0,
+                            "fill": "#034b6f"
+                        },
+                        {
+                            "number": 40.0,
+                            "fill": "#034b6f"
+                        }
+                    ]
+                ]
+            }
+        ]
+    }
+]

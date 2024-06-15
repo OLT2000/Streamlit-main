@@ -1,0 +1,133 @@
+[
+    {
+        "template": "template.pptx",
+        "data": [
+            {
+                "name": "Chart1",
+                "table": [
+                    [
+                        {
+                            "string": "4. What is your annual income?"
+                        },
+                        {
+                            "string": "Less than RM25,000"
+                        },
+                        {
+                            "string": "More than RM150,000"
+                        },
+                        {
+                            "string": "RM100,000 - RM150,000"
+                        },
+                        {
+                            "string": "RM25,000 - RM50,000"
+                        },
+                        {
+                            "string": "RM50,000 - RM100,000"
+                        }
+                    ],
+                    [],
+                    [
+                        {
+                            "string": "More than RM40"
+                        },
+                        {
+                            "number": 4.0,
+                            "fill": "#d0d0d0"
+                        },
+                        {
+                            "number": 2.0,
+                            "fill": "#d0d0d0"
+                        },
+                        {
+                            "number": 0.0,
+                            "fill": "#d0d0d0"
+                        },
+                        {
+                            "number": 1.0,
+                            "fill": "#d0d0d0"
+                        },
+                        {
+                            "number": 0.0,
+                            "fill": "#d0d0d0"
+                        }
+                    ],
+                    [
+                        {
+                            "string": "Zero"
+                        },
+                        {
+                            "number": 9.0,
+                            "fill": "#aae6f0"
+                        },
+                        {
+                            "number": 1.0,
+                            "fill": "#aae6f0"
+                        },
+                        {
+                            "number": 0.0,
+                            "fill": "#aae6f0"
+                        },
+                        {
+                            "number": 2.0,
+                            "fill": "#aae6f0"
+                        },
+                        {
+                            "number": 0.0,
+                            "fill": "#aae6f0"
+                        }
+                    ],
+                    [
+                        {
+                            "string": "Around RM20 - RM40"
+                        },
+                        {
+                            "number": 18.0,
+                            "fill": "#00a9f4"
+                        },
+                        {
+                            "number": 2.0,
+                            "fill": "#00a9f4"
+                        },
+                        {
+                            "number": 3.0,
+                            "fill": "#00a9f4"
+                        },
+                        {
+                            "number": 12.0,
+                            "fill": "#00a9f4"
+                        },
+                        {
+                            "number": 10.0,
+                            "fill": "#00a9f4"
+                        }
+                    ],
+                    [
+                        {
+                            "string": "Less than RM20"
+                        },
+                        {
+                            "number": 40.0,
+                            "fill": "#027ab1"
+                        },
+                        {
+                            "number": 1.0,
+                            "fill": "#027ab1"
+                        },
+                        {
+                            "number": 0.0,
+                            "fill": "#027ab1"
+                        },
+                        {
+                            "number": 10.0,
+                            "fill": "#027ab1"
+                        },
+                        {
+                            "number": 7.0,
+                            "fill": "#027ab1"
+                        }
+                    ]
+                ]
+            }
+        ]
+    }
+]

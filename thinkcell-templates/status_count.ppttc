@@ -1,0 +1,51 @@
+[
+    {
+        "template": "template.pptx",
+        "data": [
+            {
+                "name": "Chart1",
+                "table": [
+                    [
+                        {
+                            "string": "3. Are you currently....?"
+                        },
+                        {
+                            "string": "Employed"
+                        },
+                        {
+                            "string": "Student"
+                        },
+                        {
+                            "string": "Self-employed"
+                        },
+                        {
+                            "string": "Housewife"
+                        }
+                    ],
+                    [],
+                    [
+                        {
+                            "string": "count"
+                        },
+                        {
+                            "number": 61,
+                            "fill": "#d0d0d0"
+                        },
+                        {
+                            "number": 42,
+                            "fill": "#d0d0d0"
+                        },
+                        {
+                            "number": 17,
+                            "fill": "#d0d0d0"
+                        },
+                        {
+                            "number": 2,
+                            "fill": "#d0d0d0"
+                        }
+                    ]
+                ]
+            }
+        ]
+    }
+]

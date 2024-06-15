@@ -1,0 +1,135 @@
+[
+    {
+        "template": "template.pptx",
+        "data": [
+            {
+                "name": "Chart1",
+                "table": [
+                    [
+                        {
+                            "string": "status"
+                        },
+                        {
+                            "number": 0
+                        },
+                        {
+                            "number": 1
+                        },
+                        {
+                            "number": 2
+                        },
+                        {
+                            "number": 3
+                        }
+                    ],
+                    [],
+                    [
+                        {
+                            "number": 1
+                        },
+                        {
+                            "number": 0.0,
+                            "fill": "#d0d0d0"
+                        },
+                        {
+                            "number": 4.0,
+                            "fill": "#d0d0d0"
+                        },
+                        {
+                            "number": 19.0,
+                            "fill": "#d0d0d0"
+                        },
+                        {
+                            "number": 0.0,
+                            "fill": "#d0d0d0"
+                        }
+                    ],
+                    [
+                        {
+                            "number": 3
+                        },
+                        {
+                            "number": 0.0,
+                            "fill": "#aae6f0"
+                        },
+                        {
+                            "number": 1.0,
+                            "fill": "#aae6f0"
+                        },
+                        {
+                            "number": 2.0,
+                            "fill": "#aae6f0"
+                        },
+                        {
+                            "number": 0.0,
+                            "fill": "#aae6f0"
+                        }
+                    ],
+                    [
+                        {
+                            "number": 4
+                        },
+                        {
+                            "number": 0.0,
+                            "fill": "#00a9f4"
+                        },
+                        {
+                            "number": 3.0,
+                            "fill": "#00a9f4"
+                        },
+                        {
+                            "number": 2.0,
+                            "fill": "#00a9f4"
+                        },
+                        {
+                            "number": 0.0,
+                            "fill": "#00a9f4"
+                        }
+                    ],
+                    [
+                        {
+                            "number": 2
+                        },
+                        {
+                            "number": 1.0,
+                            "fill": "#027ab1"
+                        },
+                        {
+                            "number": 4.0,
+                            "fill": "#027ab1"
+                        },
+                        {
+                            "number": 11.0,
+                            "fill": "#027ab1"
+                        },
+                        {
+                            "number": 1.0,
+                            "fill": "#027ab1"
+                        }
+                    ],
+                    [
+                        {
+                            "number": 0
+                        },
+                        {
+                            "number": 36.0,
+                            "fill": "#034b6f"
+                        },
+                        {
+                            "number": 4.0,
+                            "fill": "#034b6f"
+                        },
+                        {
+                            "number": 24.0,
+                            "fill": "#034b6f"
+                        },
+                        {
+                            "number": 1.0,
+                            "fill": "#034b6f"
+                        }
+                    ]
+                ]
+            }
+        ]
+    }
+]

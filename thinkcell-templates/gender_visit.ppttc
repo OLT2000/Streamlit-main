@@ -1,0 +1,89 @@
+[
+    {
+        "template": "template.pptx",
+        "data": [
+            {
+                "name": "Chart1",
+                "table": [
+                    [
+                        {
+                            "string": "1. Your Gender"
+                        },
+                        {
+                            "string": "Female"
+                        },
+                        {
+                            "string": "Male"
+                        }
+                    ],
+                    [],
+                    [
+                        {
+                            "string": "Daily"
+                        },
+                        {
+                            "number": 0.0,
+                            "fill": "#d0d0d0"
+                        },
+                        {
+                            "number": 2.0,
+                            "fill": "#d0d0d0"
+                        }
+                    ],
+                    [
+                        {
+                            "string": "Weekly"
+                        },
+                        {
+                            "number": 4.0,
+                            "fill": "#aae6f0"
+                        },
+                        {
+                            "number": 5.0,
+                            "fill": "#aae6f0"
+                        }
+                    ],
+                    [
+                        {
+                            "string": "Never"
+                        },
+                        {
+                            "number": 6.0,
+                            "fill": "#00a9f4"
+                        },
+                        {
+                            "number": 3.0,
+                            "fill": "#00a9f4"
+                        }
+                    ],
+                    [
+                        {
+                            "string": "Monthly"
+                        },
+                        {
+                            "number": 10.0,
+                            "fill": "#027ab1"
+                        },
+                        {
+                            "number": 16.0,
+                            "fill": "#027ab1"
+                        }
+                    ],
+                    [
+                        {
+                            "string": "Rarely"
+                        },
+                        {
+                            "number": 45.0,
+                            "fill": "#034b6f"
+                        },
+                        {
+                            "number": 31.0,
+                            "fill": "#034b6f"
+                        }
+                    ]
+                ]
+            }
+        ]
+    }
+]

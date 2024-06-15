@@ -1,0 +1,165 @@
+[
+    {
+        "template": "template.pptx",
+        "data": [
+            {
+                "name": "Chart1",
+                "table": [
+                    [
+                        {
+                            "string": "Category"
+                        },
+                        {
+                            "string": "0"
+                        },
+                        {
+                            "string": "1"
+                        },
+                        {
+                            "string": "2"
+                        },
+                        {
+                            "string": "4"
+                        },
+                        {
+                            "string": "3"
+                        }
+                    ],
+                    [
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null
+                    ],
+                    [
+                        {
+                            "string": "0"
+                        },
+                        {
+                            "number": 43,
+                            "fill": "#d0d0d0"
+                        },
+                        {
+                            "number": 9,
+                            "fill": "#d0d0d0"
+                        },
+                        {
+                            "number": 8,
+                            "fill": "#d0d0d0"
+                        },
+                        {
+                            "number": 2,
+                            "fill": "#d0d0d0"
+                        },
+                        {
+                            "number": 2,
+                            "fill": "#d0d0d0"
+                        }
+                    ],
+                    [
+                        {
+                            "string": "1"
+                        },
+                        {
+                            "number": 17,
+                            "fill": "#aae6f0"
+                        },
+                        {
+                            "number": 9,
+                            "fill": "#aae6f0"
+                        },
+                        {
+                            "number": 6,
+                            "fill": "#aae6f0"
+                        },
+                        {
+                            "number": 0,
+                            "fill": "#aae6f0"
+                        },
+                        {
+                            "number": 2,
+                            "fill": "#aae6f0"
+                        }
+                    ],
+                    [
+                        {
+                            "string": "2"
+                        },
+                        {
+                            "number": 5,
+                            "fill": "#00a9f4"
+                        },
+                        {
+                            "number": 4,
+                            "fill": "#00a9f4"
+                        },
+                        {
+                            "number": 2,
+                            "fill": "#00a9f4"
+                        },
+                        {
+                            "number": 1,
+                            "fill": "#00a9f4"
+                        },
+                        {
+                            "number": 0,
+                            "fill": "#00a9f4"
+                        }
+                    ],
+                    [
+                        {
+                            "string": "3"
+                        },
+                        {
+                            "number": 0,
+                            "fill": "#027ab1"
+                        },
+                        {
+                            "number": 0,
+                            "fill": "#027ab1"
+                        },
+                        {
+                            "number": 0,
+                            "fill": "#027ab1"
+                        },
+                        {
+                            "number": 0,
+                            "fill": "#027ab1"
+                        },
+                        {
+                            "number": 1,
+                            "fill": "#027ab1"
+                        }
+                    ],
+                    [
+                        {
+                            "string": "4"
+                        },
+                        {
+                            "number": 0,
+                            "fill": "#034b6f"
+                        },
+                        {
+                            "number": 1,
+                            "fill": "#034b6f"
+                        },
+                        {
+                            "number": 1,
+                            "fill": "#034b6f"
+                        },
+                        {
+                            "number": 0,
+                            "fill": "#034b6f"
+                        },
+                        {
+                            "number": 0,
+                            "fill": "#034b6f"
+                        }
+                    ]
+                ]
+            }
+        ]
+    }
+]
