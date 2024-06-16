@@ -20,7 +20,7 @@ from utils.llm_utils import (
     retrieve_messages_from_thread,
     retrieve_assistant_created_files
 )
-from utils.azure_utils import get_ppt_template_names, 
+# from utils.azure_utils import get_ppt_template_names, 
 
 
 # Initialise the OpenAI client, and retrieve the assistant
@@ -257,7 +257,7 @@ elif page == "Analysis":
 
             fig, sub_df = create_bar_chart(df, col, extra_var, barmode="stack")
 
-            tc_json = df_to_thinkcell_json(sub_df, col, extra_var)
+            tc_json, tc_df = df_to_thinkcell_json(sub_df, col, extra_var)
 
             if "plotly_figure" not in st.session_state:
                 st.session_state.plotly_figure = fig
@@ -268,9 +268,13 @@ elif page == "Analysis":
 
             st.plotly_chart(st.session_state.plotly_figure)
 
-            if st.checkbox("Display raw data?", disabled=not data_file):
+            if st.checkbox("Display raw data?"):
                 st.subheader("Raw Data")
                 st.dataframe(sub_df, use_container_width=True, hide_index=True)
+
+            if st.checkbox("Display Pivot data?"):
+                st.subheader("Raw Data")
+                st.dataframe(tc_df, use_container_width=True, hide_index=False)
 
             tc_export, xl_export = st.columns(2)
             with tc_export:
@@ -287,7 +291,7 @@ elif page == "Analysis":
                 )
             
             with xl_export:
-                xl_filename = st.text_input(label="Input a filename for your CSV file.", placeholder="charter_data.csv")
+                xl_filename = st.text_input(label="Input a filename for your pivot data file.", placeholder="charter_data.csv")
                 if not xl_filename:
                     xl_filename = "charter_data.csv"
 
@@ -295,7 +299,7 @@ elif page == "Analysis":
                     label="Export to CSV",
                     file_name=xl_filename,
                     mime="text/csv",
-                    data=sub_df.to_csv(index=False, header=True, encoding="utf-8"),
+                    data=tc_df.to_csv(index=True, header=True, encoding="utf-8"),
                     disabled=not xl_filename.endswith(".csv")
                 )
 

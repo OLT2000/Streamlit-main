@@ -1,0 +1,16 @@
+3. Are you currently....?,4. What is your annual income?,count
+Student,"Less than RM25,000",40
+Employed,"Less than RM25,000",25
+Employed,"RM25,000 - RM50,000",21
+Employed,"RM50,000 - RM100,000",11
+Self-employed,"Less than RM25,000",5
+Self-employed,"RM25,000 - RM50,000",4
+Self-employed,"RM50,000 - RM100,000",4
+Self-employed,"More than RM150,000",3
+Employed,"More than RM150,000",2
+Employed,"RM100,000 - RM150,000",2
+Housewife,"Less than RM25,000",1
+Housewife,"RM50,000 - RM100,000",1
+Self-employed,"RM100,000 - RM150,000",1
+Student,"More than RM150,000",1
+Student,"RM50,000 - RM100,000",1

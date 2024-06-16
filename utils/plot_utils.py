@@ -73,7 +73,7 @@ def df_to_thinkcell_json(data: pd.DataFrame, primary_col: str, secondary_col: Op
 
     thinkcell_json = json.dumps(tc_template, indent=4)
 
-    return thinkcell_json
+    return thinkcell_json, pivot_table
 
 
 
@@ -306,7 +306,9 @@ def create_bar_chart(df, primary_var, secondary_var, barmode):
     if secondary_var:
         # Case 2: Stacked bar chart
         # Grouping by primary and secondary variable to get counts
-        grouped_df = df.groupby([primary_var, secondary_var]).size().reset_index(name='count')
+        grouped_df = df.groupby([primary_var, secondary_var]).size().reset_index(name='count').sort_values(by="count", ascending=False)
+        print(grouped_df.head())
+        print(grouped_df.sort_values(by="count"))
         fig = px.bar(grouped_df, x=primary_var, y='count', color=secondary_var, text='count', color_discrete_sequence=colors)
         
     else:

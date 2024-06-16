@@ -1,0 +1,19 @@
+﻿4. What is your annual income?,count,count,count,count
+,"⚠️ Employed
+
+The value cannot be interpreted as a number.
+","⚠️ Housewife
+
+The value cannot be interpreted as a number.
+","⚠️ Self-employed
+
+The value cannot be interpreted as a number.
+","⚠️ Student
+
+The value cannot be interpreted as a number.
+"
+"More than RM150,000",2,0,3,1
+"RM100,000 - RM150,000",2,0,1,0
+"RM50,000 - RM100,000",11,1,4,1
+"RM25,000 - RM50,000",21,0,4,0
+"Less than RM25,000",25,1,5,40
