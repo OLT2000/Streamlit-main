@@ -256,6 +256,7 @@ elif page == "Analysis":
             count_df = df[col].value_counts().reset_index()
 
             fig, sub_df = create_bar_chart(df, col, extra_var, barmode="stack")
+
             tc_json = df_to_thinkcell_json(sub_df, col, extra_var)
 
             if "plotly_figure" not in st.session_state:
@@ -267,24 +268,36 @@ elif page == "Analysis":
 
             st.plotly_chart(st.session_state.plotly_figure)
 
-            thinkcell_filename = st.text_input(label="Input a filename for your thinkcell ppttc file.", placeholder="charter_thinkcell.ppttc")
-            if not thinkcell_filename:
-                thinkcell_filename = "charter_thinkcell.ppttc"
+            if st.checkbox("Display raw data?", disabled=not data_file):
+                st.subheader("Raw Data")
+                st.dataframe(sub_df, use_container_width=True, hide_index=True)
 
-            template_dd, export_col = st.columns([0.7, 0.3])
+            tc_export, xl_export = st.columns(2)
+            with tc_export:
+                thinkcell_filename = st.text_input(label="Input a filename for your thinkcell ppttc file.", placeholder="charter_thinkcell.ppttc")
+                if not thinkcell_filename:
+                    thinkcell_filename = "charter_thinkcell.ppttc"
 
-            with template_dd:
-                st.selectbox(
-                    label="Select a template file."
+                st.download_button(
+                    label="Export to Think-Cell",
+                    file_name=thinkcell_filename,
+                    mime="application/json",
+                    data=tc_json,
+                    disabled=not thinkcell_filename.endswith(".ppttc")
                 )
+            
+            with xl_export:
+                xl_filename = st.text_input(label="Input a filename for your CSV file.", placeholder="charter_data.csv")
+                if not xl_filename:
+                    xl_filename = "charter_data.csv"
 
-            st.download_button(
-                label="Export to Think-Cell",
-                file_name=thinkcell_filename,
-                mime="application/json",
-                data=tc_json,
-                disabled=not thinkcell_filename.endswith(".ppttc")
-            )
+                st.download_button(
+                    label="Export to CSV",
+                    file_name=xl_filename,
+                    mime="text/csv",
+                    data=sub_df.to_csv(index=False, header=True, encoding="utf-8"),
+                    disabled=not xl_filename.endswith(".csv")
+                )
 
     else:
         st.write("No files have been uploaded yet.")
