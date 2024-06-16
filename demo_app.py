@@ -20,6 +20,7 @@ from utils.llm_utils import (
     retrieve_messages_from_thread,
     retrieve_assistant_created_files
 )
+from utils.azure_utils import get_ppt_template_names, 
 
 
 # Initialise the OpenAI client, and retrieve the assistant
@@ -269,6 +270,13 @@ elif page == "Analysis":
             thinkcell_filename = st.text_input(label="Input a filename for your thinkcell ppttc file.", placeholder="charter_thinkcell.ppttc")
             if not thinkcell_filename:
                 thinkcell_filename = "charter_thinkcell.ppttc"
+
+            template_dd, export_col = st.columns([0.7, 0.3])
+
+            with template_dd:
+                st.selectbox(
+                    label="Select a template file."
+                )
 
             st.download_button(
                 label="Export to Think-Cell",
