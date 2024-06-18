@@ -1,6 +1,6 @@
 [
     {
-        "template": "template.pptx",
+        "template": "https://storage.googleapis.com/example_bucekt/template.pptx",
         "data": [
             {
                 "name": "Chart1",

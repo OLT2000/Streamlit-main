@@ -3,7 +3,7 @@ import json
 
 objPpttc = [
     {
-        "template": "https://charterteststorage.blob.core.windows.net/charter-templates/graph-test-templates/bar_chart_template.potx?sp=r&st=2024-06-16T15:14:03Z&se=2024-06-16T23:14:03Z&sv=2022-11-02&sr=b&sig=u5mpxBuVFvjt3s8yyLyJPwxW3ooOBxH1vk5o9kERlqs%3D",
+        "template": "https://static.think-cell.com/ppttc/template3.pptx",
         "data": [
             {
                 "name": "Chart1",
@@ -99,7 +99,7 @@ headers = {
     'Content-Type': 'application/vnd.think-cell.ppttc+json'
 }
 
-tc_server_url = 'http://127.0.0.1:8080/'
+tc_server_url = 'http://20.68.169.15:8080/'
 
 response = requests.post(tc_server_url, headers=headers, data=json.dumps(objPpttc))
 
@@ -110,5 +110,5 @@ if response.status_code == 200:
 
 else:
     print(f"Failed with status code: {response.status_code}")
-    # print(response)
+    print(response.cookies)
     print(response.text)
