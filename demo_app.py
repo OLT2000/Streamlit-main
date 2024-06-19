@@ -262,7 +262,7 @@ if st.session_state.file_uploaded:
 
         fig, sub_df = create_bar_chart(df, col, extra_var, barmode="stack")
 
-        tc_json = df_to_thinkcell_json(sub_df, col, st.secrets.get("BARCHART_TEMPLATE"), extra_var)
+        tc_json, tc_df = df_to_thinkcell_json(sub_df, col, st.secrets.get("BARCHART_TEMPLATE"), extra_var)
 
         if "plotly_figure" not in st.session_state:
             st.session_state.plotly_figure = fig
@@ -276,6 +276,10 @@ if st.session_state.file_uploaded:
         if st.checkbox("Display raw data?", disabled=not data_file):
             st.subheader("Raw Data")
             st.dataframe(sub_df, use_container_width=True, hide_index=True)
+
+        if st.checkbox("Display Pivot data?"):
+                st.subheader("Raw Data")
+                st.dataframe(tc_df, use_container_width=True, hide_index=False)
 
         # tc_export, xl_export = st.columns(2)
         # with tc_export:
@@ -292,17 +296,17 @@ if st.session_state.file_uploaded:
         #     )
         
         # with xl_export:
-        #     xl_filename = st.text_input(label="Input a filename for your CSV file.", placeholder="charter_data.csv")
-        #     if not xl_filename:
-        #         xl_filename = "charter_data.csv"
+        xl_filename = st.text_input(label="Input a filename for your pivota data.", placeholder="charter_pivot_data.csv")
+        if not xl_filename:
+            xl_filename = "charter_pivot_data.csv"
 
-        #     st.download_button(
-        #         label="Export to CSV",
-        #         file_name=xl_filename,
-        #         mime="text/csv",
-        #         data=sub_df.to_csv(index=False, header=True, encoding="utf-8"),
-        #         disabled=not xl_filename.endswith(".csv")
-        #     )
+        st.download_button(
+            label="Export Pivot Data",
+            file_name=xl_filename,
+            mime="text/csv",
+            data=tc_df.to_csv(index=True, header=True, encoding="utf-8"),
+            disabled=not xl_filename.endswith(".csv")
+        )
 
         pptx_filename = st.text_input(
             label="Input a filename for your PowerPoint file.",

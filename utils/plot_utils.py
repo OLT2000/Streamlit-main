@@ -96,7 +96,7 @@ def df_to_thinkcell_json(data: pd.DataFrame, primary_col: str, template_path: st
 
     # thinkcell_json = json.dumps(tc_template, indent=4)
 
-    return tc_template
+    return tc_template, pivot_table
 
 
 
