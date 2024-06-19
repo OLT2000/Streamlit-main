@@ -20,6 +20,7 @@ from utils.llm_utils import (
     retrieve_messages_from_thread,
     retrieve_assistant_created_files
 )
+from utils.thinkcell import call_thinkcell_server
 
 
 # Initialise the OpenAI client, and retrieve the assistant
@@ -31,8 +32,8 @@ st.set_page_config(page_title="CHARTER")
 render_custom_css()
 
 # Sidebar for navigation
-st.sidebar.title("Navigation")
-page = st.sidebar.selectbox("Choose a page", ["LLM", "Analysis"])
+# st.sidebar.title("Navigation")
+# page = st.sidebar.selectbox("Choose a page", ["LLM", "Analysis"])
 
 # Initialise session state variables
 if "file_uploaded" not in st.session_state:
@@ -90,8 +91,8 @@ st.subheader("Data Interrogation Platform for Management Consultants.\nBegin by 
 # File upload widgets
 data_file = st.file_uploader("Upload some CSV data", type=("csv", "xlsx"))
 
-schema_flag = st.toggle("Use Column Schema?")
-schema_file = st.file_uploader("Upload a schema to support your analysis.", type=("json"), disabled=not schema_flag)
+# schema_flag = st.toggle("Use Column Schema?")
+# schema_file = st.file_uploader("Upload a schema to support your analysis.", type=("json"), disabled=not schema_flag)
 
 if data_file is not None:
     test_url = data_file._file_urls.upload_url
@@ -100,6 +101,7 @@ if data_file is not None:
     #     print(len(f))
     if "data_file" not in st.session_state:
         st.session_state.data_file = data_file
+
     if data_file != st.session_state.data_file:
         st.session_state.data_file = data_file
 
@@ -110,19 +112,28 @@ if data_file is not None:
     st.session_state.file_uploaded = True
     st.session_state.columns = data.columns.to_list()
 
-if schema_file is not None:
-    if "schema_file" not in st.session_state:
-        st.session_state.schema_file = schema_file
-    if schema_file != st.session_state.schema_file:
-        st.session_state.schema_file = schema_file
-    uploaded_schema_file = client.files.create(file=open(schema_file.name, "rb"), purpose="assistants")
-    st.session_state.uploaded_file_ids.append(uploaded_schema_file.id)
+else:
+    # TODO: Have a function that resets or pops the necessary state vars
+    st.session_state.file_uploaded = False
+    if "analysis_reset" in st.session_state:
+        st.session_state.pop("analysis_reset")
+
+    if "analysis_button" in st.session_state:
+        st.session_state.pop("analysis_button")
+
+# if schema_file is not None:
+#     if "schema_file" not in st.session_state:
+#         st.session_state.schema_file = schema_file
+#     if schema_file != st.session_state.schema_file:
+#         st.session_state.schema_file = schema_file
+#     uploaded_schema_file = client.files.create(file=open(schema_file.name, "rb"), purpose="assistants")
+#     st.session_state.uploaded_file_ids.append(uploaded_schema_file.id)
 
 # if "analysis_reset" not in st.session_state:
 #     st.session_state.analysis_reset = False
 
-if page == "LLM":
-    pass
+# if page == "LLM":
+#     pass
     # st.header("LLM Page")
 
     # if st.session_state.file_uploaded:
@@ -214,89 +225,120 @@ if page == "LLM":
     #     delete_files(st.session_state.assistant_created_file_ids)
     #     delete_thread(st.session_state.thread_id)
 
-elif page == "Analysis":
-    st.header("Analysis Page")
+# elif page == "Analysis":
+st.header("Analysis Page")
 
-    if st.session_state.file_uploaded:
-        st.write("The data and schema files have been uploaded and are available for analysis.")
-        st.session_state.analysis_reset = st.button(
-            label="Reset Analysis?"
-        )
-        
-        # TODO: Look into callback for the buttons
-        col = st.selectbox(
-            label="Which column would you like to analyse?",
-            options=st.session_state.columns
-        )
+if st.session_state.file_uploaded:
+    st.write("The data and schema files have been uploaded and are available for analysis.")
+    
+    st.session_state.analysis_reset = st.button(
+        label="Reset Analysis?"
+    )
+    
+    # TODO: Look into callback for the buttons
+    col = st.selectbox(
+        label="Which column would you like to analyse?",
+        options=st.session_state.columns
+    )
 
-        # agg = st.selectbox(
-        #     label="Select an aggregation to use in analysis.",
-        #     options=[
-        #         "Count",
+    extra_var = st.selectbox(
+        "Optional Independent Variable",
+        options=[
+            None
+        ] + [c for c in st.session_state.columns if c != col]
+    )
+    analysis_btn = st.button("Generate Analysis")
+    if "analysis_button" not in st.session_state:
+        st.session_state.analysis_button = analysis_btn
+    
+    else:
+        st.session_state.analysis_button = not st.session_state.analysis_reset
 
-        #     ]
-        # )
+    if st.session_state.analysis_button:
+        df = load_data(data_file)
+        count_df = df[col].value_counts().reset_index()
 
-        extra_var = st.selectbox(
-            "Would you like to add a third variable?",
-            options=[
-                None
-            ] + [c for c in st.session_state.columns if c != col]
-        )
-        analysis_btn = st.button("Generate Analysis")
-        if "analysis_button" not in st.session_state:
-            st.session_state.analysis_button = analysis_btn
+        fig, sub_df = create_bar_chart(df, col, extra_var, barmode="stack")
+
+        tc_json = df_to_thinkcell_json(sub_df, col, st.secrets.get("BARCHART_TEMPLATE"), extra_var)
+
+        if "plotly_figure" not in st.session_state:
+            st.session_state.plotly_figure = fig
         
         else:
-            st.session_state.analysis_button = not st.session_state.analysis_reset
-
-        if st.session_state.analysis_button:
-            df = load_data(data_file)
-            count_df = df[col].value_counts().reset_index()
-
-            fig, sub_df = create_bar_chart(df, col, extra_var, barmode="stack")
-
-            tc_json = df_to_thinkcell_json(sub_df, col, extra_var)
-
-            if "plotly_figure" not in st.session_state:
+            if st.session_state.plotly_figure != fig:
                 st.session_state.plotly_figure = fig
-            
-            else:
-                if st.session_state.plotly_figure != fig:
-                    st.session_state.plotly_figure = fig
 
-            st.plotly_chart(st.session_state.plotly_figure)
+        st.plotly_chart(st.session_state.plotly_figure)
 
-            if st.checkbox("Display raw data?", disabled=not data_file):
-                st.subheader("Raw Data")
-                st.dataframe(sub_df, use_container_width=True, hide_index=True)
+        if st.checkbox("Display raw data?", disabled=not data_file):
+            st.subheader("Raw Data")
+            st.dataframe(sub_df, use_container_width=True, hide_index=True)
 
-            tc_export, xl_export = st.columns(2)
-            with tc_export:
-                thinkcell_filename = st.text_input(label="Input a filename for your thinkcell ppttc file.", placeholder="charter_thinkcell.ppttc")
-                if not thinkcell_filename:
-                    thinkcell_filename = "charter_thinkcell.ppttc"
+        # tc_export, xl_export = st.columns(2)
+        # with tc_export:
+        #     thinkcell_filename = st.text_input(label="Input a filename for your thinkcell ppttc file.", placeholder="charter_thinkcell.ppttc")
+        #     if not thinkcell_filename:
+        #         thinkcell_filename = "charter_thinkcell.ppttc"
 
-                st.download_button(
-                    label="Export to Think-Cell",
-                    file_name=thinkcell_filename,
-                    mime="application/json",
-                    data=tc_json,
-                    disabled=not thinkcell_filename.endswith(".ppttc")
-                )
-            
-            with xl_export:
-                xl_filename = st.text_input(label="Input a filename for your CSV file.", placeholder="charter_data.csv")
-                if not xl_filename:
-                    xl_filename = "charter_data.csv"
+        #     st.download_button(
+        #         label="Export to Think-Cell",
+        #         file_name=thinkcell_filename,
+        #         mime="application/json",
+        #         data=json.dumps(tc_json, indent=4),
+        #         disabled=not thinkcell_filename.endswith(".ppttc")
+        #     )
+        
+        # with xl_export:
+        #     xl_filename = st.text_input(label="Input a filename for your CSV file.", placeholder="charter_data.csv")
+        #     if not xl_filename:
+        #         xl_filename = "charter_data.csv"
 
-                st.download_button(
-                    label="Export to CSV",
-                    file_name=xl_filename,
-                    mime="text/csv",
-                    data=sub_df.to_csv(index=False, header=True, encoding="utf-8"),
-                    disabled=not xl_filename.endswith(".csv")
-                )
+        #     st.download_button(
+        #         label="Export to CSV",
+        #         file_name=xl_filename,
+        #         mime="text/csv",
+        #         data=sub_df.to_csv(index=False, header=True, encoding="utf-8"),
+        #         disabled=not xl_filename.endswith(".csv")
+        #     )
 
-    else:
-        st.write("No files have been uploaded yet.")
+        pptx_filename = st.text_input(
+            label="Input a filename for your PowerPoint file.",
+            placeholder="charter_plot.pptx"
+        )
+        
+        if not pptx_filename:
+            pptx_filename = "charter_plot.pptx"
+
+        # st.download_button(
+        #     label="Generate PowerPoint",
+        #     file_name=pptx_filename,
+        #     mime="application/vnd.openxmlformats-officedocument.presentationml.presentation",
+        #     data=call_thinkcell_server(tc_json),
+        #     disabled=not pptx_filename.endswith(".pptx")
+        # )
+
+        generate, download = st.columns(2)
+        with generate:
+            generate_button = st.button("Generate PowerPoint")
+
+        with download:
+            if generate_button:
+                if pptx_filename.endswith(".pptx"):
+                    pptx_data = call_thinkcell_server(tc_json)
+                    st.download_button(
+                        label="Download PowerPoint",
+                        file_name=pptx_filename,
+                        mime="application/vnd.openxmlformats-officedocument.presentationml.presentation",
+                        data=pptx_data
+                    )
+                else:
+                    st.error("Filename must end with .pptx")
+
+else:
+    # TODO: Fix Errors with Caching
+    #       When deleting a previously uploaded file, the page resets and shows an error, rather than the below
+    st.write("No files have been uploaded yet.")
+
+# for k, v in st.session_state.items():
+#     print(f"{k}: {v}")

@@ -20,20 +20,31 @@ def transform_to_pivot(data: pd.DataFrame, primary_col: str, secondary_col: Opti
     return pivot_table
 
 
-colors = ["#034b6f", "#027ab1", "#00a9f4", "#aae6f0", "#d0d0d0"]
+colour_mappings = {
+    "McKinsey": ["#034b6f", "#027ab1", "#00a9f4", "#aae6f0", "#d0d0d0"],
+    "Bain": ['#333333', '#5c5c5c', '#858585', '#2c475a', '#cc0000', '#983b72', '#bc73a0', '#d9abc7', '#640a40', '#bccabb', '#83ac9c', '#4f7866', '#0f4c3d', '#a5bbd2', '#7791a8', '#48647c']
+}
 
+"""
+Original Bain: ['#cc0000', '#2c475a', '#858585', '#5c5c5c', '#333333', '#d9abc7', '#bc73a0', '#983b72', '#640a40', '#bccabb', '#83ac9c', '#4f7866', '#0f4c3d', '#a5bbd2', '#7791a8', '#48647c', '#2c475a']
 
-def df_to_thinkcell_json(data: pd.DataFrame, primary_col: str, secondary_col: Optional[str]) -> str | Dict:
+Bain: [Guardsman Red, Pickled Bluewood, Gray, Scorpion (Slightly Darker Gray), Mine SHaft (Dark Gray), Blossom, Turkish Rose, Rouge, Pumice, Acapulco, Como, Eden, Rock Blue, Bermuda Gray, Blue Bayoux, ]
+"""
 
+current_selection = "Bain"
+
+colors = colour_mappings[current_selection]
+
+def df_to_thinkcell_json(data: pd.DataFrame, primary_col: str, template_path: str, secondary_col: Optional[str]) -> str | Dict:
     if secondary_col:
         pivot_table = data.pivot(columns=primary_col, index=secondary_col).fillna(0)
-        fill_colours = colors[::-1]
+        fill_colours = colors
 
     else:
         pivot_table = data.set_index(primary_col).T
-        fill_colours = colors[0]
+        fill_colours = [colors[0]]
 
-    pivot_table.sort_values(by=pivot_table.columns[0], ascending=True, inplace=True)
+    pivot_table.sort_values(by=pivot_table.columns[0], ascending=False, inplace=True)
 
     init_row_tc = [
         {type_helper(primary_col): primary_col},
@@ -43,7 +54,7 @@ def df_to_thinkcell_json(data: pd.DataFrame, primary_col: str, secondary_col: Op
     ]
 
     thinkcell_table_data = []
-    for idx, row in enumerate(pivot_table.to_records()):
+    for idx, row in enumerate(pivot_table.iloc[::].to_records()):
         row = row.tolist()
 
         label, *values = row
@@ -58,28 +69,34 @@ def df_to_thinkcell_json(data: pd.DataFrame, primary_col: str, secondary_col: Op
         thinkcell_table_data.append(tc_row)
 
     thinkcell_chart = {
-        "name": "Chart1",
+        "name": "BarChart",
         "table": [
-            init_row_tc, [], *thinkcell_table_data
+            init_row_tc, [], *thinkcell_table_data[::-1]
         ]
     }
-    
+
     tc_template = [
         {
-            "template": "template.pptx",
-            "data": [thinkcell_chart]
+            "template": template_path,
+            "data": [
+                {
+                    "name": "Title",
+                    "table": [[{"string":"A slide title"}]] 
+                },
+                thinkcell_chart
+            ]
         }
     ]
 
-    thinkcell_json = json.dumps(tc_template, indent=4)
+    # thinkcell_json = json.dumps(tc_template, indent=4)
 
-    return thinkcell_json
+    return tc_template
 
 
 
 def generate_thinkcell_json(column_data, template_path, ppttc_path, x_column_data=None, selected_x_values=None):
     # Reverse the color scheme
-    reversed_colors = colors[::-1]
+    # reversed_colors = colors[::-1]
     single_column_color = "#034b6f"
 
     if x_column_data is None:
@@ -306,7 +323,8 @@ def create_bar_chart(df, primary_var, secondary_var, barmode):
     if secondary_var:
         # Case 2: Stacked bar chart
         # Grouping by primary and secondary variable to get counts
-        grouped_df = df.groupby([primary_var, secondary_var]).size().reset_index(name='count')
+        grouped_df = df.groupby([primary_var, secondary_var]).size().reset_index(name='count').sort_values(by=[primary_var, "count"], ascending=[True, False])
+
         fig = px.bar(grouped_df, x=primary_var, y='count', color=secondary_var, text='count', color_discrete_sequence=colors)
         
     else:
@@ -321,6 +339,7 @@ def create_bar_chart(df, primary_var, secondary_var, barmode):
         xaxis_title=primary_var,
         yaxis_title='Count',
         barmode=barmode,
+        legend={"traceorder": "reversed"}
         # bargap=0.2  # Adjusts the gap between bars
     )
 

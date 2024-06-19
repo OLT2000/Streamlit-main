@@ -3,90 +3,86 @@ import json
 
 objPpttc = [
     {
-        "template": "https://storage.googleapis.com/example_bucekt/template.pptx",
+        "template": "https://storage.googleapis.com/example_bucekt/BarChart.pptx",
         "data": [
             {
-                "name": "Chart1",
+                "name": "BarChart",
                 "table": [
                     [
                         {
-                            "string": "Category"
+                            "string": "1. Your Gender"
                         },
                         {
-                            "string": "1"
+                            "string": "Female"
                         },
                         {
-                            "string": "0"
+                            "string": "Male"
                         }
                     ],
-                    [
-                        None,
-                        None,
-                        None
-                    ],
+                    [],
                     [
                         {
-                            "string": "0"
+                            "string": "Daily"
                         },
                         {
-                            "number": 27,
-                            "fill": "#d0d0d0"
+                            "number": 0.0,
+                            "fill": "#333333"
                         },
                         {
-                            "number": 38,
-                            "fill": "#d0d0d0"
+                            "number": 2.0,
+                            "fill": "#333333"
                         }
                     ],
                     [
                         {
-                            "string": "1"
+                            "string": "Monthly"
                         },
                         {
-                            "number": 9,
-                            "fill": "#aae6f0"
+                            "number": 10.0,
+                            "fill": "#5c5c5c"
                         },
                         {
-                            "number": 14,
-                            "fill": "#aae6f0"
+                            "number": 16.0,
+                            "fill": "#5c5c5c"
                         }
                     ],
                     [
                         {
-                            "string": "2"
+                            "string": "Never"
                         },
                         {
-                            "number": 10,
-                            "fill": "#00a9f4"
+                            "number": 6.0,
+                            "fill": "#858585"
                         },
                         {
-                            "number": 7,
-                            "fill": "#00a9f4"
+                            "number": 3.0,
+                            "fill": "#858585"
                         }
                     ],
                     [
                         {
-                            "string": "3"
+                            "string": "Rarely"
                         },
                         {
-                            "number": 3,
-                            "fill": "#027ab1"
+                            "number": 45.0,
+                            "fill": "#2c475a"
                         },
                         {
-                            "number": 0,
-                            "fill": "#027ab1"
+                            "number": 31.0,
+                            "fill": "#2c475a"
                         }
                     ],
                     [
                         {
-                            "string": "4"
+                            "string": "Weekly"
                         },
                         {
-                            "number": 5,
-                            "fill": "#034b6f"
+                            "number": 4.0,
+                            "fill": "#cc0000"
                         },
                         {
-                            "number": 0,
-                            "fill": "#034b6f"
+                            "number": 5.0,
+                            "fill": "#cc0000"
                         }
                     ]
                 ]
@@ -95,11 +91,49 @@ objPpttc = [
     }
 ]
 
+# objPpttc = [
+#     {
+#         "template": "https://storage.googleapis.com/example_bucekt/BainBarTemplate.pptx",
+#         "data": [
+#             {
+#                 "name": "Chart1",
+#                 "table": [
+#                     [
+#                         {
+#                             "string": "1. Your Gender"
+#                         },
+#                         {
+#                             "string": "Female"
+#                         },
+#                         {
+#                             "string": "Male"
+#                         }
+#                     ],
+#                     [],
+#                     [
+#                         {
+#                             "string": "count"
+#                         },
+#                         {
+#                             "number": 65,
+#                             "fill": "#333333"
+#                         },
+#                         {
+#                             "number": 57,
+#                             "fill": "#333333"
+#                         }
+#                     ]
+#                 ]
+#             }
+#         ]
+#     }
+# ]
+
 headers = {
     'Content-Type': 'application/vnd.think-cell.ppttc+json'
 }
 
-response = requests.post('http://127.0.0.1:8081', headers=headers, data=json.dumps(objPpttc))
+response = requests.post('https://eeb8569744781e.lhr.life', headers=headers, data=json.dumps(objPpttc))
 
 if response.status_code == 200:
     with open('sample.pptx', 'wb') as f:
