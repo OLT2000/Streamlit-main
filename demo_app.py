@@ -54,14 +54,15 @@ if "disabled" not in st.session_state:
 if "uploaded_file_ids" not in st.session_state:
     st.session_state.uploaded_file_ids = []
 
+# TODO: Force types to all be object or string
 @st.cache_data
 def load_data(uploaded_data_file, **kwargs):
     try:
         if uploaded_data_file.name.endswith(".csv"):
-            data = pd.read_csv(uploaded_data_file, **kwargs)
+            data = pd.read_csv(uploaded_data_file, **kwargs).astype(str)
 
         elif uploaded_data_file.name.endswith(".xlsx"):
-            data = pd.read_excel(uploaded_data_file)
+            data = pd.read_excel(uploaded_data_file).astype(str)
         
 
     # except UnicodeDecodeError:
@@ -236,6 +237,7 @@ if st.session_state.file_uploaded:
     )
     
     # TODO: Look into callback for the buttons
+    # TODO: Make columns selections state persistent
     col = st.selectbox(
         label="Which column would you like to analyse?",
         options=st.session_state.columns
