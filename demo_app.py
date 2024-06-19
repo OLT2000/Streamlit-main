@@ -54,7 +54,7 @@ if "disabled" not in st.session_state:
 if "uploaded_file_ids" not in st.session_state:
     st.session_state.uploaded_file_ids = []
 
-# TODO: Force types to all be object or string
+# TODO[DONE]: Force types to all be object or string
 @st.cache_data
 def load_data(uploaded_data_file, **kwargs):
     try:
