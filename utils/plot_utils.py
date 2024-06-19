@@ -22,11 +22,11 @@ def transform_to_pivot(data: pd.DataFrame, primary_col: str, secondary_col: Opti
 
 colour_mappings = {
     "McKinsey": ["#034b6f", "#027ab1", "#00a9f4", "#aae6f0", "#d0d0d0"],
-    "Bain": ['#333333', '#5c5c5c', '#858585', '#2c475a', '#cc0000', '#983b72', '#bc73a0', '#d9abc7' , '#b4b4b4', '#640a40', '#bccabb', '#83ac9c', '#4f7866', '#0f4c3d', '#a5bbd2', '#7791a8', '#48647c', '#46647c' '#2e475b', '#FF0000', '#CD5C5C', '#F08080', '#FA8072', '#E9967A', '#FFA07A', '#DC143C', '#B22222', '#8B0000']
+    "Bain": ['#333333', '#5c5c5c', '#858585', '#2c475a', '#cc0000', '#983b72', '#bc73a0', '#d9abc7' , '#b4b4b4', '#640a40', '#bccabb', '#83ac9c', '#4f7866', '#0f4c3d', '#a5bbd2', '#7791a8', '#48647c', '#46647c', '#2e475b', '#FF0000', '#CD5C5C', '#F08080', '#FA8072', '#E9967A', '#FFA07A', '#DC143C', '#B22222', '#8B0000', '#DCDCDC', '#D3D3D3', '#C0C0C0', '#A9A9A9', '#696969', '#778899', '#708090', '#2F4F4F', '#FFA500', '#FFA07A', '#FF7F50', '#FF6347', '#FF4500', '#FF8C00']
 }
 
 """
-Original Bain: ['#cc0000', '#2c475a', '#858585', '#5c5c5c', '#333333', '#d9abc7', '#bc73a0', '#983b72', '#640a40', '#bccabb', '#83ac9c', '#4f7866', '#0f4c3d', '#a5bbd2', '#7791a8', '#48647c', '#2c475a']
+Original Bain: ['#cc0000', '#2c475a', '#858585', '#5c5c5c', '#333333', '#d9abc7', '#bc73a0', '#983b72', '#640a40', '#bccabb', '#83ac9c', '#4f7866', '#0f4c3d', '#a5bbd2', '#7791a8', '#48647c', '#2c475a', ]
 
 Bain: [Guardsman Red, Pickled Bluewood, Gray, Scorpion (Slightly Darker Gray), Mine SHaft (Dark Gray), Blossom, Turkish Rose, Rouge, Pumice, Acapulco, Como, Eden, Rock Blue, Bermuda Gray, Blue Bayoux, ]
 
@@ -41,6 +41,7 @@ def df_to_thinkcell_json(data: pd.DataFrame, primary_col: str, template_path: st
     if secondary_col:
         pivot_table = data.pivot(columns=primary_col, index=secondary_col).fillna(0)
         fill_colours = colors
+        print(json.dumps(data[secondary_col].tolist()))
 
     else:
         pivot_table = data.set_index(primary_col).T
@@ -57,18 +58,17 @@ def df_to_thinkcell_json(data: pd.DataFrame, primary_col: str, template_path: st
 
     thinkcell_table_data = []
     if len(pivot_table) > len(fill_colours):
+    
         raise IndexError("More variables than colours available")
     
     for idx, row in enumerate(pivot_table.iloc[::].to_records()):
         row = row.tolist()
 
         label, *values = row
-        if idx >= len(fill_colours):
-            raise IndexError(
-                f"There"
-            )
+
 
         colour = fill_colours[idx]
+        print(idx, label, colour)
         tc_row = [
             {type_helper(label): label},
             *[
@@ -245,6 +245,7 @@ def plotly_json_to_tc(fig_json):
 
 def create_bar_chart(df, primary_var, secondary_var, barmode):
     # df = df.sort_values(by=[primary_var, secondary_var], ascending=True, inplace=False)
+    print(json.dumps(colors, indent=4))
     if secondary_var:
         # Case 2: Stacked bar chart
         # Grouping by primary and secondary variable to get counts
