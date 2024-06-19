@@ -24,12 +24,12 @@ from utils.thinkcell import call_thinkcell_server
 
 
 # Initialise the OpenAI client, and retrieve the assistant
-client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
+# client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
 
 st.set_page_config(page_title="CHARTER")
 
 # Apply custom CSS
-render_custom_css()
+# render_custom_css()
 
 # Sidebar for navigation
 # st.sidebar.title("Navigation")
