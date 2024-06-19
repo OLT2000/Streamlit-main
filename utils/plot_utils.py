@@ -22,13 +22,15 @@ def transform_to_pivot(data: pd.DataFrame, primary_col: str, secondary_col: Opti
 
 colour_mappings = {
     "McKinsey": ["#034b6f", "#027ab1", "#00a9f4", "#aae6f0", "#d0d0d0"],
-    "Bain": ['#333333', '#5c5c5c', '#858585', '#2c475a', '#cc0000', '#983b72', '#bc73a0', '#d9abc7', '#640a40', '#bccabb', '#83ac9c', '#4f7866', '#0f4c3d', '#a5bbd2', '#7791a8', '#48647c']
+    "Bain": ['#333333', '#5c5c5c', '#858585', '#2c475a', '#cc0000', '#983b72', '#bc73a0', '#d9abc7' , '#b4b4b4', '#640a40', '#bccabb', '#83ac9c', '#4f7866', '#0f4c3d', '#a5bbd2', '#7791a8', '#48647c', '#46647c' '#2e475b', '#FF0000', '#CD5C5C', '#F08080', '#FA8072', '#E9967A', '#FFA07A', '#DC143C', '#B22222', '#8B0000']
 }
 
 """
 Original Bain: ['#cc0000', '#2c475a', '#858585', '#5c5c5c', '#333333', '#d9abc7', '#bc73a0', '#983b72', '#640a40', '#bccabb', '#83ac9c', '#4f7866', '#0f4c3d', '#a5bbd2', '#7791a8', '#48647c', '#2c475a']
 
 Bain: [Guardsman Red, Pickled Bluewood, Gray, Scorpion (Slightly Darker Gray), Mine SHaft (Dark Gray), Blossom, Turkish Rose, Rouge, Pumice, Acapulco, Como, Eden, Rock Blue, Bermuda Gray, Blue Bayoux, ]
+
+Bain v2 #e9cd48 #c6aa3c #ac8830 #d9abc7 #b974a1 #963b74 #640a40 #bccabb #82ab9b #4f7866 #0e4c3d #a5bbd2 #7791aa #46647c #2e475b
 """
 
 current_selection = "Bain"
@@ -54,10 +56,18 @@ def df_to_thinkcell_json(data: pd.DataFrame, primary_col: str, template_path: st
     ]
 
     thinkcell_table_data = []
+    if len(pivot_table) > len(fill_colours):
+        raise IndexError("More variables than colours available")
+    
     for idx, row in enumerate(pivot_table.iloc[::].to_records()):
         row = row.tolist()
 
         label, *values = row
+        if idx >= len(fill_colours):
+            raise IndexError(
+                f"There"
+            )
+
         colour = fill_colours[idx]
         tc_row = [
             {type_helper(label): label},
