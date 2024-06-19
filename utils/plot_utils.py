@@ -75,13 +75,19 @@ def df_to_thinkcell_json(data: pd.DataFrame, primary_col: str, template_path: st
         ]
     }
 
+    if secondary_col:
+        chart_title = secondary_col
+
+    else:
+        chart_title = primary_col
+
     tc_template = [
         {
             "template": template_path,
             "data": [
                 {
-                    "name": "Title",
-                    "table": [[{"string":"A slide title"}]] 
+                    "name": "BarChartTitle",
+                    "table": [[{"string":chart_title}]] 
                 },
                 thinkcell_chart
             ]
@@ -339,9 +345,20 @@ def create_bar_chart(df, primary_var, secondary_var, barmode):
         xaxis_title=primary_var,
         yaxis_title='Count',
         barmode=barmode,
-        legend={"traceorder": "reversed"}
+        legend=dict(
+            orientation="h",
+            entrywidth=70,
+            yanchor="bottom",
+            y=1.02,
+            xanchor="right",
+            x=1
+        )
+        # legend={"traceorder": "reversed"}
         # bargap=0.2  # Adjusts the gap between bars
     )
+
+    fig.update_legends(entrywidth=20)
+    # fig.update_xaxes(type="category")
 
     # print(fig.data)
     return fig, grouped_df
