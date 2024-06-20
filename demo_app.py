@@ -9,6 +9,7 @@ from utils.plot_utils import create_bar_chart, df_to_thinkcell_json
 import plotly.express as px
 from plotly import graph_objects as go
 from openai import OpenAI
+from io import BytesIO
 from utils.llm_utils import (
     delete_files,
     delete_thread,
@@ -50,6 +51,8 @@ if "code_output" not in st.session_state:
 
 if "disabled" not in st.session_state:
     st.session_state.disabled = False
+
+st.session_state.run_thinkcell = False
 
 if "uploaded_file_ids" not in st.session_state:
     st.session_state.uploaded_file_ids = []
@@ -261,6 +264,8 @@ if st.session_state.file_uploaded:
                 disabled=not xl_filename.endswith(".csv")
             )
 
+            # def download_ppt_on_click(html_response)
+
             pptx_filename = st.text_input(
                 label="Input a filename for your PowerPoint file.",
                 placeholder="charter_plot.pptx"
@@ -269,9 +274,18 @@ if st.session_state.file_uploaded:
             if not pptx_filename:
                 pptx_filename = "charter_plot.pptx"
 
+            # st.download_button(
+            #     label="Generate and Download PPTX",
+            #     file_name=pptx_filename,
+            #     mime="application/vnd.openxmlformats-officedocument.presentationml.presentation",
+            #     data=call_thinkcell_server(tc_json) if st.session_state.run_thinkcell else None,
+            #     disabled=not pptx_filename.endswith(".pptx")
+            # )
+
             generate, download = st.columns(2)
             with generate:
                 generate_button = st.button("Generate PowerPoint")
+                
 
             with download:
                 if generate_button:

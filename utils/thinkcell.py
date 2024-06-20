@@ -19,9 +19,6 @@ def call_thinkcell_server(thinkcell_json: list):
     else:
         if response.status_code == 200:
             return response.content
-            # with open('sample.pptx', 'wb') as f:
-            #     f.write(response.content)
-            # print("Success.")
 
         else:
             raise ConnectionError(f"Failed with status code: {response.status_code}\n{response.text}")
