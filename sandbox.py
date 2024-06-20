@@ -1,6 +1,30 @@
-import re
+import pandas as pd
+from xml.sax import ContentHandler, parse
 
-colours = "Orange#FFA500rgb(255, 165, 0) LightSalmon#FFA07Argb(255, 160, 122) Coral#FF7F50rgb(255, 127, 80) Tomato#FF6347rgb(255, 99, 71) OrangeRed#FF4500rgb(255, 69, 0) DarkOrange#FF8C00rgb(255, 140, 0)"
+# Reference https://goo.gl/KaOBG3
+class ExcelHandler(ContentHandler):
+    def __init__(self):
+        self.chars = [  ]
+        self.cells = [  ]
+        self.rows = [  ]
+        self.tables = [  ]
+    def characters(self, content):
+        self.chars.append(content)
+    def startElement(self, name, atts):
+        if name=="Cell":
+            self.chars = [  ]
+        elif name=="Row":
+            self.cells=[  ]
+        elif name=="Table":
+            self.rows = [  ]
+    def endElement(self, name):
+        if name=="Cell":
+            self.cells.append(''.join(self.chars))
+        elif name=="Row":
+            self.rows.append(self.cells)
+        elif name=="Table":
+            self.tables.append(self.rows)
 
-split_hex = re.findall(r"#[A-Z0-9]{6}", colours)
-print(split_hex)
+excelHandler = ExcelHandler()
+parse(r'C:\Users\ollie\Documents\Python Projects\Charter\McK_colour_exports_v2\uploads\Starbucks_satisfactory_survey_xml.xlsx', excelHandler)
+df1 = pd.DataFrame(excelHandler.tables[0][4:], columns=excelHandler.tables[0][3])

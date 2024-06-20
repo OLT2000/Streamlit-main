@@ -133,7 +133,7 @@ headers = {
     'Content-Type': 'application/vnd.think-cell.ppttc+json'
 }
 
-response = requests.post('https://eeb8569744781e.lhr.life', headers=headers, data=json.dumps(objPpttc))
+response = requests.post('http://20.68.169.15:8080', headers=headers, data=json.dumps(objPpttc))
 
 if response.status_code == 200:
     with open('sample.pptx', 'wb') as f:

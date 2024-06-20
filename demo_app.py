@@ -61,8 +61,8 @@ def load_data(uploaded_data_file, **kwargs):
         if uploaded_data_file.name.endswith(".csv"):
             data = pd.read_csv(uploaded_data_file, **kwargs).astype(str)
 
-        elif uploaded_data_file.name.endswith(".xlsx"):
-            data = pd.read_excel(uploaded_data_file).astype(str)
+        elif uploaded_data_file.name.endswith(".xlsx") or uploaded_data_file.name.endswith(".xls"):
+            data = pd.read_excel(uploaded_data_file, sheet_name=0).astype(str)
         
 
     # except UnicodeDecodeError:
@@ -90,7 +90,7 @@ st.subheader("🔍 CHARTER")
 st.subheader("Data Interrogation Platform for Management Consultants.\nBegin by uploading your tabular data in CSV format and then ask a query using the textbox below.")
 
 # File upload widgets
-data_file = st.file_uploader("Upload some CSV data", type=("csv", "xlsx"))
+data_file = st.file_uploader("Upload some CSV data", type=("csv", "xlsx", "xls"))
 
 # schema_flag = st.toggle("Use Column Schema?")
 # schema_file = st.file_uploader("Upload a schema to support your analysis.", type=("json"), disabled=not schema_flag)
