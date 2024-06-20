@@ -54,6 +54,8 @@ if "disabled" not in st.session_state:
 if "uploaded_file_ids" not in st.session_state:
     st.session_state.uploaded_file_ids = []
 
+EXCEL_EXTENSIONS = {".csv", ".xlsx", ".xls", ".xlsb", "ods", "xlsm", "xltx", "xltm"}
+
 # TODO[DONE]: Force types to all be object or string
 @st.cache_data
 def load_data(uploaded_data_file, **kwargs):
@@ -61,8 +63,10 @@ def load_data(uploaded_data_file, **kwargs):
         if uploaded_data_file.name.endswith(".csv"):
             data = pd.read_csv(uploaded_data_file, **kwargs).astype(str)
 
-        elif uploaded_data_file.name.endswith(".xlsx") or uploaded_data_file.name.endswith(".xls"):
+        elif uploaded_data_file.name.endswith(tuple(EXCEL_EXTENSIONS - {".csv"})):
             data = pd.read_excel(uploaded_data_file, sheet_name=0).astype(str)
+
+            
         
 
     # except UnicodeDecodeError:
@@ -90,7 +94,7 @@ st.subheader("🔍 CHARTER")
 st.subheader("Data Interrogation Platform for Management Consultants.\nBegin by uploading your tabular data in CSV format and then ask a query using the textbox below.")
 
 # File upload widgets
-data_file = st.file_uploader("Upload some CSV data", type=("csv", "xlsx", "xls"))
+data_file = st.file_uploader("Upload some CSV data", type=EXCEL_EXTENSIONS)
 
 # schema_flag = st.toggle("Use Column Schema?")
 # schema_file = st.file_uploader("Upload a schema to support your analysis.", type=("json"), disabled=not schema_flag)
@@ -249,9 +253,10 @@ if st.session_state.file_uploaded:
             None
         ] + [c for c in st.session_state.columns if c != col]
     )
-    analysis_btn = st.button("Generate Analysis")
+    # analysis_btn = st.button("Generate Analysis")
+    # TODO: Re-write the generation states
     if "analysis_button" not in st.session_state:
-        st.session_state.analysis_button = analysis_btn
+        st.session_state.analysis_button = False #analysis_btn
     
     else:
         st.session_state.analysis_button = not st.session_state.analysis_reset
