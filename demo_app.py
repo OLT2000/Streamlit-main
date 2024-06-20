@@ -87,6 +87,14 @@ def load_schema(schema_file):
         print(f"An unexpected error occurred when loading schema: {e}")
     else:
         return schema
+    
+
+def on_change_independent_var():
+    if st.session_state.independent_dd == st.session_state.dependent_dd:
+        st.session_state.pop("dependent_dd")
+
+    else:
+        st.session_state.dependent_dd = st.session_state.dependent_dd
 
 # Shared UI elements
 st.title("Charter")
@@ -236,38 +244,51 @@ st.header("Analysis Page")
 if st.session_state.file_uploaded:
     st.write("The data and schema files have been uploaded and are available for analysis.")
     
-    st.session_state.analysis_reset = st.button(
-        label="Reset Analysis?"
-    )
-    
-    # TODO: Look into callback for the buttons
-    # TODO: Make columns selections state persistent
-    col = st.selectbox(
-        label="Which column would you like to analyse?",
-        options=st.session_state.columns
+    analysis_reset = st.button(
+        label="Reset Analysis?",
     )
 
-    extra_var = st.selectbox(
-        "Optional Independent Variable",
-        options=[
-            None
-        ] + [c for c in st.session_state.columns if c != col]
+    if analysis_reset:
+        st.session_state.pop("independent_dd")
+        st.session_state.pop("dependent_dd")
+
+    if "independent_dd" not in st.session_state:
+        st.session_state.independent_dd = None
+
+    if "dependent_dd" not in st.session_state:
+        st.session_state.dependent_dd = None
+    
+    st.selectbox(
+        label="Select your Independent Variable",
+        options=st.session_state.columns,
+        index=None,
+        key="independent_dd",
+        on_change=on_change_independent_var
     )
+
+    st.selectbox(
+        "Select an Optional Dependent Variable",
+        options=[c for c in st.session_state.columns if c != st.session_state.independent_dd],
+        index=None,
+        key="dependent_dd"
+    )
+
+
     # analysis_btn = st.button("Generate Analysis")
     # TODO: Re-write the generation states
-    if "analysis_button" not in st.session_state:
-        st.session_state.analysis_button = False #analysis_btn
+    # if "analysis_button" not in st.session_state:
+    #     st.session_state.analysis_button = False #analysis_btn
     
-    else:
-        st.session_state.analysis_button = not st.session_state.analysis_reset
+    # else:
+    #     st.session_state.analysis_button = not st.session_state.analysis_reset
 
-    if st.session_state.analysis_button:
+    if st.session_state.independent_dd:
         df = load_data(data_file)
-        count_df = df[col].value_counts().reset_index()
+        count_df = df[st.session_state.independent_dd].value_counts().reset_index()
 
-        fig, sub_df = create_bar_chart(df, col, extra_var, barmode="stack")
+        fig, sub_df = create_bar_chart(df, st.session_state.independent_dd, st.session_state.dependent_dd, barmode="stack")
 
-        tc_json, tc_df = df_to_thinkcell_json(sub_df, col, st.secrets.get("BARCHART_TEMPLATE"), extra_var)
+        tc_json, tc_df = df_to_thinkcell_json(sub_df, st.session_state.independent_dd, st.secrets.get("BARCHART_TEMPLATE"), st.session_state.dependent_dd)
 
         if "plotly_figure" not in st.session_state:
             st.session_state.plotly_figure = fig
@@ -345,6 +366,8 @@ if st.session_state.file_uploaded:
                     )
                 else:
                     st.error("Filename must end with .pptx")
+    else:
+        st.write("Please choose an independen variable to start your analysis.")
 
 else:
     # TODO: Fix Errors with Caching
