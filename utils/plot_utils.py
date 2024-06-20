@@ -41,7 +41,6 @@ def df_to_thinkcell_json(data: pd.DataFrame, primary_col: str, template_path: st
     if secondary_col:
         pivot_table = data.pivot(columns=primary_col, index=secondary_col).fillna(0)
         fill_colours = colors
-        print(json.dumps(data[secondary_col].tolist()))
 
     else:
         pivot_table = data.set_index(primary_col).T
@@ -68,7 +67,6 @@ def df_to_thinkcell_json(data: pd.DataFrame, primary_col: str, template_path: st
 
 
         colour = fill_colours[idx]
-        print(idx, label, colour)
         tc_row = [
             {type_helper(label): label},
             *[
@@ -245,7 +243,6 @@ def plotly_json_to_tc(fig_json):
 
 def create_bar_chart(df, primary_var, secondary_var, barmode):
     # df = df.sort_values(by=[primary_var, secondary_var], ascending=True, inplace=False)
-    print(json.dumps(colors, indent=4))
     if secondary_var:
         # Case 2: Stacked bar chart
         # Grouping by primary and secondary variable to get counts
