@@ -26,7 +26,7 @@ from utils.thinkcell import call_thinkcell_server
 # Initialise the OpenAI client, and retrieve the assistant
 # client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
 
-st.set_page_config(page_title="CHARTER")
+st.set_page_config(page_title="CHARTER", layout="wide")
 
 # Apply custom CSS
 # render_custom_css()
@@ -102,6 +102,7 @@ st.subheader("🔍 CHARTER")
 st.subheader("Data Interrogation Platform for Management Consultants.\nBegin by uploading your tabular data in CSV format and then ask a query using the textbox below.")
 
 # File upload widgets
+# TODO: Look into using keys here instead of the variable
 data_file = st.file_uploader("Upload some CSV data", type=EXCEL_EXTENSIONS)
 
 # schema_flag = st.toggle("Use Column Schema?")
@@ -134,245 +135,156 @@ else:
     if "analysis_button" in st.session_state:
         st.session_state.pop("analysis_button")
 
-# if schema_file is not None:
-#     if "schema_file" not in st.session_state:
-#         st.session_state.schema_file = schema_file
-#     if schema_file != st.session_state.schema_file:
-#         st.session_state.schema_file = schema_file
-#     uploaded_schema_file = client.files.create(file=open(schema_file.name, "rb"), purpose="assistants")
-#     st.session_state.uploaded_file_ids.append(uploaded_schema_file.id)
-
-# if "analysis_reset" not in st.session_state:
-#     st.session_state.analysis_reset = False
-
-# if page == "LLM":
-#     pass
-    # st.header("LLM Page")
-
-    # if st.session_state.file_uploaded:
-    #     prompt_text = f"You are an expert at data analysis using Python.\nUse your skills to answer questions about the survey data stored in the location '/mnt/data/{st.session_state.uploaded_file_ids[-1]}'. Each row constitutes a respondent to the survey and the columns map to individual survey questions.\n"
-
-    #     if schema_file is not None:
-    #         json_schema = [{
-    #             "column_name": "The name of the column in the dataset.",
-    #             "column_description": "The survey question associated with the above column.",
-    #             "column_type": "The type of response - one of (quotas, date, radio, text, checkbox). All options are single select except for checkbox.",
-    #             "encodings": {
-    #                 "code": "Original value used in the survey."
-    #             }
-    #         }]
-    #         schema_prompt_text = f"\nA schema file has also been uploaded to '/mnt/data/{uploaded_schema_file.id}'."
-    #         prompt_text += schema_prompt_text
-
-    #     assistant = client.beta.assistants.update(
-    #         assistant_id=st.secrets["ASSISTANT_ID"],
-    #         tool_resources={
-    #             "code_interpreter": {
-    #                 "file_ids": st.session_state.uploaded_file_ids
-    #             }
-    #         }
-    #     )
-
-    #     chat_placeholder = "How many rows is my data?"
-    #     st.session_state.disabled = False
-    # else:
-    #     st.session_state.disabled = True
-    #     chat_placeholder = "Upload some CSV data to kick things off!"
-
-    # if schema_flag and not schema_file:
-    #     st.session_state.disabled = True
-
-    # if st.checkbox("Display raw data?", disabled=not st.session_state.file_uploaded):
-    #     st.subheader("Raw Data")
-    #     data = load_data(st.session_state.data_file)
-    #     st.dataframe(data)
-
-    # text_box = st.empty()
-    # qn_btn = st.empty()
-
-    # question = text_box.text_area("Ask a question", disabled=st.session_state.disabled, placeholder=chat_placeholder)
-    # if qn_btn.button("Ask Charter"):
-    #     text_box.empty()
-    #     qn_btn.empty()
-
-    #     if "thread_id" not in st.session_state:
-    #         thread = client.beta.threads.create()
-    #         st.session_state.thread_id = thread.id
-
-    #     client.beta.threads.update(
-    #         thread_id=st.session_state.thread_id,
-    #         tool_resources={"code_interpreter": {"file_ids": st.session_state.uploaded_file_ids}}
-    #     )
-
-    #     if "text_boxes" not in st.session_state:
-    #         st.session_state.text_boxes = []
-
-    #     client.beta.threads.messages.create(
-    #         thread_id=st.session_state.thread_id,
-    #         role="assistant",
-    #         content=prompt_text
-    #     )
-
-    #     client.beta.threads.messages.create(
-    #         thread_id=st.session_state.thread_id,
-    #         role="user",
-    #         content=question
-    #     )
-
-    #     st.session_state.text_boxes.append(st.empty())
-    #     st.session_state.text_boxes[-1].success(f"**> 🤔 User:** {question}")
-
-    #     with client.beta.threads.runs.stream(thread_id=st.session_state.thread_id,
-    #                                          assistant_id=assistant.id,
-    #                                          tool_choice={"type": "code_interpreter"},
-    #                                          event_handler=EventHandler(),
-    #                                          temperature=0) as stream:
-    #         stream.until_done()
-    #         st.toast("Analysis Complete.")
-
-    #     with st.spinner("Preparing the files for download..."):
-    #         assistant_messages = retrieve_messages_from_thread(st.session_state.thread_id)
-    #         st.session_state.assistant_created_file_ids = retrieve_assistant_created_files(assistant_messages)
-    #         st.session_state.download_files, st.session_state.download_file_names = render_download_files(st.session_state.assistant_created_file_ids)
-
-    #     delete_files(st.session_state.assistant_created_file_ids)
-    #     delete_thread(st.session_state.thread_id)
-
-# elif page == "Analysis":
 st.header("Analysis Page")
 
 if st.session_state.file_uploaded:
     st.write("The data and schema files have been uploaded and are available for analysis.")
-    
-    analysis_reset = st.button(
-        label="Reset Analysis?",
-    )
+    filter_col, plot_col, export_col = st.columns([0.25, 0.5, 0.25], gap="medium")
+    with filter_col:
+        st.subheader("Settings")
+        # Set Up
+        # TODO: Consider doing this at the start of loading the page
+        
 
-    if analysis_reset:
-        st.session_state.pop("independent_dd")
-        st.session_state.pop("dependent_dd")
+        reset_col, swap_col = st.columns(2)
+        with reset_col:
+            analysis_reset = st.button(
+                label="Reset Analysis?",
+            )
 
-    if "independent_dd" not in st.session_state:
-        st.session_state.independent_dd = None
+        if analysis_reset:
+            st.session_state.pop("independent_dd")
+            st.session_state.pop("dependent_dd")   
+        
+        if "independent_dd" not in st.session_state:
+            st.session_state.independent_dd = None
 
-    if "dependent_dd" not in st.session_state:
-        st.session_state.dependent_dd = None
-    
-    st.selectbox(
-        label="Select your Independent Variable",
-        options=st.session_state.columns,
-        index=None,
-        key="independent_dd",
-        on_change=on_change_independent_var
-    )
+        if "dependent_dd" not in st.session_state:
+            st.session_state.dependent_dd = None
 
-    st.selectbox(
-        "Select an Optional Dependent Variable",
-        options=[c for c in st.session_state.columns if c != st.session_state.independent_dd],
-        index=None,
-        key="dependent_dd"
-    )
+        with swap_col:
+            data_transpose = st.button(
+                "Swap Variables?"
+            )
 
+        if data_transpose:
+            st.session_state.independent_dd, st.session_state.dependent_dd = st.session_state.dependent_dd, st.session_state.independent_dd
+        
+        st.selectbox(
+            label="Select your Independent Variable",
+            options=st.session_state.columns,
+            index=None,
+            key="independent_dd",
+            on_change=on_change_independent_var
+        )
 
-    # analysis_btn = st.button("Generate Analysis")
-    # TODO: Re-write the generation states
-    # if "analysis_button" not in st.session_state:
-    #     st.session_state.analysis_button = False #analysis_btn
-    
-    # else:
-    #     st.session_state.analysis_button = not st.session_state.analysis_reset
-
-    if st.session_state.independent_dd:
-        df = load_data(data_file)
-        count_df = df[st.session_state.independent_dd].value_counts().reset_index()
-
-        fig, sub_df = create_bar_chart(df, st.session_state.independent_dd, st.session_state.dependent_dd, barmode="stack")
-
-        tc_json, tc_df = df_to_thinkcell_json(sub_df, st.session_state.independent_dd, st.secrets.get("BARCHART_TEMPLATE"), st.session_state.dependent_dd)
-
-        if "plotly_figure" not in st.session_state:
-            st.session_state.plotly_figure = fig
+        if st.session_state.independent_dd:
+            independent_variables = load_data(data_file, _usecols=st.session_state.independent_dd)[st.session_state.independent_dd].unique().tolist()
+            default_filter_values = independent_variables
+            filter_options = ["All"] + independent_variables
         
         else:
-            if st.session_state.plotly_figure != fig:
+            filter_options = []
+            default_filter_values = None
+            
+
+        # # Research the best way to store DFs when calling them so often.
+        # def multi_select_all():
+        #     if "All" in st.session_state.filter_multi_select:
+        #         st.session_state.filter_multi_select = independent_variables
+        
+        # st.text("Select Filter Value")
+        # select_container = st.container(height=300)
+        
+        # with select_container:
+        #     st.multiselect(
+        #         label="",
+        #         default=default_filter_values,
+        #         options=filter_options,
+        #         disabled = st.session_state.independent_dd is None,
+        #         key="filter_multi_select",
+        #         on_change=multi_select_all
+        #     )
+
+        st.selectbox(
+            "Select an Optional Dependent Variable",
+            options=[c for c in st.session_state.columns if c != st.session_state.independent_dd],
+            index=None,
+            key="dependent_dd"
+        )
+
+    with plot_col:
+        st.subheader("Results")
+        if st.session_state.independent_dd: # and st.session_state.filter_multi_select != []:
+            df = load_data(data_file)
+            count_df = df[st.session_state.independent_dd].value_counts().reset_index()
+
+            fig, sub_df = create_bar_chart(
+                df=df,
+                primary_var=st.session_state.independent_dd,
+                secondary_var=st.session_state.dependent_dd,
+                primary_values=independent_variables,
+                barmode="stack"
+            )
+
+            tc_json, tc_df = df_to_thinkcell_json(sub_df, st.session_state.independent_dd, st.secrets.get("BARCHART_TEMPLATE"), st.session_state.dependent_dd)
+
+            if "plotly_figure" not in st.session_state:
                 st.session_state.plotly_figure = fig
+            
+            else:
+                if st.session_state.plotly_figure != fig:
+                    st.session_state.plotly_figure = fig
 
-        st.plotly_chart(st.session_state.plotly_figure)
+            st.plotly_chart(st.session_state.plotly_figure)
 
-        if st.checkbox("Display raw data?", disabled=not data_file):
-            st.subheader("Raw Data")
-            st.dataframe(sub_df, use_container_width=True, hide_index=True)
-
-        if st.checkbox("Display Pivot data?"):
-                st.subheader("Raw Data")
+            if st.checkbox("Display Pivot data?"):
+                st.subheader("Pivot Data")
                 st.dataframe(tc_df, use_container_width=True, hide_index=False)
 
-        # tc_export, xl_export = st.columns(2)
-        # with tc_export:
-        #     thinkcell_filename = st.text_input(label="Input a filename for your thinkcell ppttc file.", placeholder="charter_thinkcell.ppttc")
-        #     if not thinkcell_filename:
-        #         thinkcell_filename = "charter_thinkcell.ppttc"
+            
+        else:
+            st.write("Please choose an independent variable to start your analysis.")
+    
+    with export_col:
+        st.subheader("Exports")
+        if st.session_state.independent_dd: # and st.session_state.filter_multi_select != []:
+            xl_filename = st.text_input(label="Input a filename for your pivot data.", placeholder="charter_pivot_data.csv")
+            if not xl_filename:
+                xl_filename = "charter_pivot_data.csv"
 
-        #     st.download_button(
-        #         label="Export to Think-Cell",
-        #         file_name=thinkcell_filename,
-        #         mime="application/json",
-        #         data=json.dumps(tc_json, indent=4),
-        #         disabled=not thinkcell_filename.endswith(".ppttc")
-        #     )
-        
-        # with xl_export:
-        xl_filename = st.text_input(label="Input a filename for your pivota data.", placeholder="charter_pivot_data.csv")
-        if not xl_filename:
-            xl_filename = "charter_pivot_data.csv"
+            st.download_button(
+                label="Export Pivot Data",
+                file_name=xl_filename,
+                mime="text/csv",
+                data=tc_df.to_csv(index=True, header=True, encoding="utf-8"),
+                disabled=not xl_filename.endswith(".csv")
+            )
 
-        st.download_button(
-            label="Export Pivot Data",
-            file_name=xl_filename,
-            mime="text/csv",
-            data=tc_df.to_csv(index=True, header=True, encoding="utf-8"),
-            disabled=not xl_filename.endswith(".csv")
-        )
+            pptx_filename = st.text_input(
+                label="Input a filename for your PowerPoint file.",
+                placeholder="charter_plot.pptx"
+            )
+            
+            if not pptx_filename:
+                pptx_filename = "charter_plot.pptx"
 
-        pptx_filename = st.text_input(
-            label="Input a filename for your PowerPoint file.",
-            placeholder="charter_plot.pptx"
-        )
-        
-        if not pptx_filename:
-            pptx_filename = "charter_plot.pptx"
+            generate, download = st.columns(2)
+            with generate:
+                generate_button = st.button("Generate PowerPoint")
 
-        # st.download_button(
-        #     label="Generate PowerPoint",
-        #     file_name=pptx_filename,
-        #     mime="application/vnd.openxmlformats-officedocument.presentationml.presentation",
-        #     data=call_thinkcell_server(tc_json),
-        #     disabled=not pptx_filename.endswith(".pptx")
-        # )
-
-        generate, download = st.columns(2)
-        with generate:
-            generate_button = st.button("Generate PowerPoint")
-
-        with download:
-            if generate_button:
-                if pptx_filename.endswith(".pptx"):
-                    pptx_data = call_thinkcell_server(tc_json)
-                    st.download_button(
-                        label="Download PowerPoint",
-                        file_name=pptx_filename,
-                        mime="application/vnd.openxmlformats-officedocument.presentationml.presentation",
-                        data=pptx_data
-                    )
-                else:
-                    st.error("Filename must end with .pptx")
-    else:
-        st.write("Please choose an independen variable to start your analysis.")
+            with download:
+                if generate_button:
+                    if pptx_filename.endswith(".pptx"):
+                        pptx_data = call_thinkcell_server(tc_json)
+                        st.download_button(
+                            label="Download PowerPoint",
+                            file_name=pptx_filename,
+                            mime="application/vnd.openxmlformats-officedocument.presentationml.presentation",
+                            data=pptx_data
+                        )
+                    else:
+                        st.error("Filename must end with .pptx")
 
 else:
-    # TODO: Fix Errors with Caching
-    #       When deleting a previously uploaded file, the page resets and shows an error, rather than the below
     st.write("No files have been uploaded yet.")
-
-# for k, v in st.session_state.items():
-#     print(f"{k}: {v}")

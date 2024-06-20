@@ -4,6 +4,7 @@ import json
 from numpy import unique
 from collections import defaultdict
 from typing import List, Optional, Union, Dict, Any
+from streamlit import warning
 
 
 def transform_to_pivot(data: pd.DataFrame, primary_col: str, secondary_col: Optional[str] = None) -> pd.DataFrame:
@@ -57,16 +58,18 @@ def df_to_thinkcell_json(data: pd.DataFrame, primary_col: str, template_path: st
 
     thinkcell_table_data = []
     if len(pivot_table) > len(fill_colours):
-    
-        raise IndexError("More variables than colours available")
+        warning("Run Out Of Colours To Choose From. Defaulting to Grey.")
+        # raise IndexError("More variables than colours available")
     
     for idx, row in enumerate(pivot_table.iloc[::].to_records()):
         row = row.tolist()
 
         label, *values = row
 
-
-        colour = fill_colours[idx]
+        if idx >= len(fill_colours):
+            colour = "#A3A3A3"
+        else:
+            colour = fill_colours[idx]
         tc_row = [
             {type_helper(label): label},
             *[
@@ -241,19 +244,19 @@ def plotly_json_to_tc(fig_json):
     return json.dumps(tc_template, indent=4)
     
 
-def create_bar_chart(df, primary_var, secondary_var, barmode):
+def create_bar_chart(df, primary_var, secondary_var, primary_values, barmode):
     # df = df.sort_values(by=[primary_var, secondary_var], ascending=True, inplace=False)
     if secondary_var:
         # Case 2: Stacked bar chart
         # Grouping by primary and secondary variable to get counts
-        grouped_df = df.groupby([primary_var, secondary_var]).size().reset_index(name='count').sort_values(by=[primary_var, "count"], ascending=[True, False])
+        grouped_df = df.loc[df[primary_var].isin(primary_values)].groupby([primary_var, secondary_var]).size().reset_index(name='count').sort_values(by=[primary_var, "count"], ascending=[True, False])
 
         fig = px.bar(grouped_df, x=primary_var, y='count', color=secondary_var, text='count', color_discrete_sequence=colors)
         
     else:
         # Case 1: Simple bar chart
         # Grouping by primary variable to get counts
-        grouped_df = df[primary_var].value_counts().reset_index()
+        grouped_df = df.loc[df[primary_var].isin(primary_values)][primary_var].value_counts().reset_index()
         grouped_df.columns = [primary_var, 'count']
         fig = px.bar(grouped_df, x=primary_var, y='count', text='count', color_discrete_sequence=colors)
 
@@ -264,17 +267,17 @@ def create_bar_chart(df, primary_var, secondary_var, barmode):
         barmode=barmode,
         legend=dict(
             orientation="h",
-            entrywidth=70,
+            entrywidth=0.0,
+            entrywidthmode="pixels",
             yanchor="bottom",
             y=1.02,
-            xanchor="right",
-            x=1
+            xanchor="center",
+            x=0.5
         )
         # legend={"traceorder": "reversed"}
         # bargap=0.2  # Adjusts the gap between bars
     )
 
-    fig.update_legends(entrywidth=20)
     # fig.update_xaxes(type="category")
 
     # print(fig.data)
