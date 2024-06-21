@@ -154,12 +154,11 @@ def create_bar_chart(df, primary_var, secondary_var, primary_values, barmode):
             y=1.02,
             xanchor="center",
             x=0.5
-        )
-        # legend={"traceorder": "reversed"}
-        # bargap=0.2  # Adjusts the gap between bars
+        ),
     )
 
     # fig.update_xaxes(type="category")
+    fig.update_traces(textangle=0)
 
     # print(fig.data)
     return fig, grouped_df
