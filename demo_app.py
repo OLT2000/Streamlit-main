@@ -9,6 +9,7 @@ from utils.plot_utils import create_bar_chart, df_to_thinkcell_json
 import plotly.express as px
 from plotly import graph_objects as go
 from openai import OpenAI
+from utils.data_engineering import load_question_schema
 from utils.llm_utils import (
     delete_files,
     delete_thread,
@@ -60,8 +61,8 @@ def load_data(uploaded_data_file, **kwargs):
         if uploaded_data_file.name.endswith(".csv"):
             data = pd.read_csv(uploaded_data_file, **kwargs)
 
-        elif uploaded_data_file.name.endswith(".xlsx"):
-            data = pd.read_excel(uploaded_data_file)
+        elif uploaded_data_file.name.endswith((".xlsx", ".xls")):
+            data = pd.read_excel(uploaded_data_file, sheet_name=0)
         
 
     # except UnicodeDecodeError:
@@ -72,6 +73,10 @@ def load_data(uploaded_data_file, **kwargs):
 
     else:
         return data
+
+
+# def parse_question_schema(excel_sheet)
+
 
 @st.cache_data
 def load_schema(schema_file):
@@ -89,7 +94,7 @@ st.subheader("🔍 CHARTER")
 st.subheader("Data Interrogation Platform for Management Consultants.\nBegin by uploading your tabular data in CSV format and then ask a query using the textbox below.")
 
 # File upload widgets
-data_file = st.file_uploader("Upload some CSV data", type=("csv", "xlsx"))
+data_file = st.file_uploader("Upload some CSV data", type=("xlsx", "xls"))
 
 schema_flag = st.toggle("Use Column Schema?")
 schema_file = st.file_uploader("Upload a schema to support your analysis.", type=("json"), disabled=not schema_flag)
@@ -101,9 +106,23 @@ if data_file is not None:
     #     print(len(f))
     if "data_file" not in st.session_state:
         st.session_state.data_file = data_file
+
     if data_file != st.session_state.data_file:
         st.session_state.data_file = data_file
 
+    if "question_schema" not in st.session_state:
+
+        schema = load_question_schema(data_file, "Questions")
+
+        field_text_to_key = {}
+        for key, value in schema.items():
+            field_text = value['field_text']
+            if field_text not in field_text_to_key:
+                field_text_to_key[field_text] = []
+            field_text_to_key[field_text].append(key)
+
+        st.session_state.field_text_key_map = field_text_to_key
+        st.session_state.question_schema = schema
 
     data = load_data(data_file)
     # uploaded_data_file = client.files.create(file=open(data_file.name, "rb"), purpose="assistants")
@@ -229,6 +248,26 @@ elif page == "Analysis":
             label="Which column would you like to analyse?",
             options=st.session_state.columns
         )
+
+        st.selectbox(
+            label="Select a Question to Analyse.",
+            options=st.session_state.field_text_key_map.keys(),
+            key="question_selection"
+        )
+        
+        field_codes = st.session_state.field_text_key_map[st.session_state.question_selection]
+        if not len(field_codes) == 1:
+            st.warning(f"Available Codes: {field_codes}")
+
+        else:
+            selected_field = field_codes[0]
+            selected_schema = st.session_state.question_schema[selected_field]
+            if selected_schema["question_type"] == "table":
+                sub_fields = [r["sub_field"] for r in selected_schema["rows"]]
+                st.selectbox(
+                    "Select a sub-topic to analyse.",
+                    options=sub_fields
+                )
 
         # agg = st.selectbox(
         #     label="Select an aggregation to use in analysis.",
