@@ -104,6 +104,7 @@ def on_change_independent_var():
     else:
         st.session_state.dependent_dd = st.session_state.dependent_dd
 
+
 # Shared UI elements
 st.title("Charter")
 st.subheader("🔍 CHARTER")
@@ -208,7 +209,6 @@ if st.session_state.file_uploaded:
         else:
             filter_options = []
             default_filter_values = None
-            
 
         # # Research the best way to store DFs when calling them so often.
         # def multi_select_all():
@@ -234,6 +234,44 @@ if st.session_state.file_uploaded:
             index=None,
             key="dependent_dd"
         )
+
+        st.selectbox(
+            label="Select a Question to Analyse.",
+            options=st.session_state.field_text_key_map.keys(),
+            index=None,
+            key="question_selection"
+        )
+
+        if st.session_state.question_selection:
+            field_codes = st.session_state.field_text_key_map[st.session_state.question_selection]
+            if not len(field_codes) == 1:
+                st.warning(f"Available Codes: {field_codes}")
+
+            else:
+                selected_field = field_codes[0]
+                selected_schema = st.session_state.question_schema[selected_field]
+                if selected_schema["question_type"] == "table":
+                    sub_fields = [r["sub_field"] for r in selected_schema["rows"]]
+                    sub_field_disabled = False
+
+                else:
+                    sub_fields = []
+                    sub_field_disabled = True
+
+        else:
+            sub_fields = []
+            sub_field_disabled = True      
+
+        
+        st.selectbox(
+            "Select a sub-topic to analyse.",
+            options=sub_fields,
+            index=None,
+            disabled=sub_field_disabled,
+            key="question_sub_field"
+        )
+
+            
 
     with plot_col:
         st.subheader("Results")
