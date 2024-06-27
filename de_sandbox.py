@@ -1,5 +1,7 @@
 from pathlib import Path
 import openpyxl
+import openpyxl.workbook
+import openpyxl.worksheet
 import regex 
 from typing import List
 import json
@@ -85,87 +87,157 @@ def clean_row(row):
             cell.value = None
 
 
+def get_next_row_safe(row_generator):
+    for row in row_generator:
+        # BUG: I don't know why this didn't work previously.
+        clean_row(row)
+        first_cell, *_ = row
+        if all(c.value is None for c in row):
+            yield False
+
+        elif first_cell.value and regex.search(all_field_regex, first_cell.value):
+            yield False
+
+
+        else:
+            yield row
+
+
 # metadata = dict()
 # screening_questions = dict()
 # survey_questions = dict()
 all_keys = dict()
 
 
-prev_row = (None)
+prev_row = tuple()
 for row in sheet.iter_rows():
     clean_row(row)
     if not all(c.value is None for c in row):
-        # Check that previous row was empty
         first_cell, *_ = row
         assert first_cell.column == 1
+        if all(c.value is None for c in prev_row):
+            # Check that previous row was empty
+            
+            # Check to see if we have a question/screening field
+            field_code = regex.search(all_field_regex, first_cell.value)
+            if not field_code:
+                print(f"Could not identify a field code for the cell {first_cell.value} ({first_cell.row}, {first_cell.column})")
+                continue
 
-        if first_cell.row > 1:
-            # prev_row = sheet.iter_rows(min_row=first_val.row, max_row=first_val.row)
-            # clean_row(prev_row)
-            if all(c.value is None for c in prev_row):
-                # Check to see if we have a question/screening field
-                field_code = regex.search(all_field_regex, first_cell.value)
-                if not field_code:
-                    print(f"Could not identify a field code for the cell {first_cell.value} ({first_cell.row}, {first_cell.column})")
-                    continue
+            else:
+                field_code = field_code.group(0)
+            
+            is_column = regex.search(r"^\[\w+\]:$", field_code) is not None
+            if is_column:
+                key = field_code[1:-2]
 
-                else:
-                    field_code = field_code.group(0)
+            else:
+                key = field_code
+
+            field_search = regex.search(question_regex, field_code)
+            is_metadata = regex.search(question_regex, field_code) is None
+
+            # if field_search:
+            #     key = field_search.group(0)
+            #     is_metadata = False
+
+            # else:
+            #     is_metadata = True
+            #     if is_column:
+            #         key = field_code[1:-2]
+            #     else:
+            #         key = field_code
+            
+            if key in all_keys.keys():
+                print(f"Found a duplicate key {key} for {first_cell.value}")
+
+            else:
+                primary_text = regex.search(r'(?<=^\[?\w+\]?: ).+', first_cell.value)
+                if not primary_text:
+                    print(f"No primary text found for {field_code}")
                 
-                is_column = regex.search(r"^\[\w+\]:$", field_code) is not None
-                
-
-                field_search = regex.search(question_regex, field_code)
-                if field_search:
-                    key = field_search.group(0)
-                    is_metadata = False
-
                 else:
-                    is_metadata = True
-                    if is_column:
-                        key = field_code[1:-2]
-                    else:
-                        key = field_code
-                
-                if key in all_keys.keys():
-                    print(f"Found a duplicate key {key} for {first_cell.value}")
+                    primary_text = primary_text.group(0)
 
-                else:
-                    primary_text = regex.search(r'(?<=^\[?\w+\]?: ).+', first_cell.value)
-                    if not primary_text:
-                        print(f"No primary text found for {field_code}")
+                all_keys[key] = {
+                    "is_column": is_column,
+                    "is_metadata": is_metadata,
+                    "primary_text": primary_text,
+                    "schema_row_start": first_cell.row,
+                }
+
+            curr_key = key
+        
+        else:
+            if first_cell.row == all_keys[curr_key]["schema_row_start"] + 1:
+                field_type = regex.search(r"(?<=Values: ?)\d+-\d+$", first_cell.value)
+                if field_type:
+                    value_map_start = field_type.group(0).split("-")[0]
+                    value_map_end = field_type.group(0).split("-")[1]
                     
+                    if str.isnumeric(value_map_start) and str.isnumeric(value_map_end):
+                        encoding_start = first_cell.row + 1
+                        encoding_end = first_cell.row + (int(value_map_end) - int(value_map_start)) + 1
+                        encoding_table = [
+                            [c.value for c in r]
+                            for r in sheet.iter_rows(min_col=2, max_col=3, min_row=encoding_start, max_row=encoding_end)
+                        ]
+                        all_keys[key]["encodings"] = dict(encoding_table)
+
                     else:
-                        primary_text = primary_text.group(0)
+                        print(f"Found Non-Numeric Value Map {field_type.group(0)} for {key}. Skipping.")
+                        continue
 
-                    all_keys[key] = {
-                        "is_column": is_column,
-                        "is_metadata": is_metadata,
-                        "primary_text": primary_text,
-                        "schema_row_start": first_cell.row,
-                    }
+                if all_keys[curr_key]["is_column"]:
+                    all_keys[curr_key]["related_columns"] = [curr_key]
 
-                # if not regex_search:
-                #     # This is a non-screener or survey question I.E. Metadata
-                #     if first_cell.value in all_keys.keys():
-                #         print(f"Found a duplicate metadata key at row {first_cell.row}: {first_cell.value}")
+                else:
+                    sub_row_start = encoding_end + 1
+                    column_rows = dict()
+                    next_row_iter = get_next_row_safe(sheet.iter_rows(min_row=sub_row_start))#, max_row=all_keys[curr_key]["schema_row_end"]))
+                    next_row = next(next_row_iter)
+                    while next_row:
+                        non_null_row = [c.value for c in next_row if c.value]
+                        if len(non_null_row) != 2:
+                            print(f"Row encoding error for {curr_key} row ({sub_row_start}). Row table contains more than two variables: {non_null_row}.")
 
-                #     else:
-                #         key = regex.search(all_field_regex, first_cell.value).group(0)
-                #         all_keys[regex.search(all_field_regex, first_cell.value).group(0)] = {
-                #             "schema_row_start": first_cell.row
-                #         }
+                        else:
+                            row_id, row_text = non_null_row
+                            column_rows[row_id] = {
+                                "row_number": row_id.rsplit("r", 1)[-1],
+                                "row_text": row_text
+                            }
+                        
+                        next_row = next(next_row_iter)                        
 
-                # else:
-                #     # print(first_cell.value, regex_search)
-                #     primary_key = regex_search.group(0)
-                #     if primary_key in all_keys.keys():
-                #         print(f"Found a duplicate survey/screening key at row {first_cell.row}: {primary_key} + {first_cell.value}")
+                    all_keys[curr_key]["related_columns"] = list(column_rows.keys())
+                    all_keys[curr_key]["rows"] = column_rows
+                        
 
-                #     else:
-                #         all_keys[primary_key] = {
-                #             "schema_row_start": first_cell.row
-                #         }
+            # if not regex_search:
+            #     # This is a non-screener or survey question I.E. Metadata
+            #     if first_cell.value in all_keys.keys():
+            #         print(f"Found a duplicate metadata key at row {first_cell.row}: {first_cell.value}")
+
+            #     else:
+            #         key = regex.search(all_field_regex, first_cell.value).group(0)
+            #         all_keys[regex.search(all_field_regex, first_cell.value).group(0)] = {
+            #             "schema_row_start": first_cell.row
+            #         }
+
+            # else:
+            #     # print(first_cell.value, regex_search)
+            #     primary_key = regex_search.group(0)
+            #     if primary_key in all_keys.keys():
+            #         print(f"Found a duplicate survey/screening key at row {first_cell.row}: {primary_key} + {first_cell.value}")
+
+            #     else:
+            #         all_keys[primary_key] = {
+            #             "schema_row_start": first_cell.row
+            #         }
+        
+        # else:
+        #     pass
 
     prev_row = row
 
@@ -183,57 +255,75 @@ for i in range(len(sorted_keys) - 1):
 last_key = sorted_keys[-1]
 all_keys[last_key]["schema_row_end"] = sheet.max_row
 
-
-
-# def is_row_a_field_gen(row_gen):
-    # if 
-
-
-for primary_key, table_data in all_keys.items():
-    row_start = table_data["schema_row_start"]
-    row_end = table_data["schema_row_end"]
-    is_col = table_data["is_column"]
-    field_type = sheet.cell(row=row_start+1, column=1).value
-    sub_dict = dict()
-    prev_row = (None)
-    if is_col:
-        map_range = regex.search(r"(?<=Values: ?)\d+-\d+$", field_type)
-        if map_range:
-            value_map_start = map_range.group(0).split("-")[0]
-            value_map_end = map_range.group(0).split("-")[1]
-            
-            if str.isnumeric(value_map_start) and str.isnumeric(value_map_end):
-                encoding_table = [
-                    [c.value for c in r]
-                    for r in sheet.iter_rows(min_col=2, max_col=3, min_row=row_start+2, max_row=row_start+1+(int(value_map_end) - int(value_map_start) + 1))
-                ]
-                all_keys[primary_key]["encodings"] = dict(encoding_table)
-
-            else:
-                print(f"Found Non-Numeric Value Map {map_range} for {primary_key}")
-
-            all_keys[primary_key]["column_type"] = "single_select"
-
-        else:
-            print(f"Found No Value Map of {field_type} for {primary_key}")
-            all_keys[primary_key]["column_type"] = field_type
-
-        all_keys[primary_key]["related_cols"] = [primary_key]
-        
-
 print(json.dumps(all_keys, indent=4))
 
-    # for row in :
-    #     if not all(c.value is None for c in row):
-    #         field_code = regex.search(all_field_regex, first_cell.value)
-    #         if not field_code:
-    #             print(f"Could not identify a field code for the cell {first_cell.value} ({first_cell.row}, {first_cell.column})")
-    #             continue
 
-    #         else:
-    #             field_code = field_code.group(0)
-            
-    #         is_column = regex.search(r"^\[\w+\]:$", field_code) is not None
+# def get_next_row_safe(row_generator):
+#     for row in row_generator:
+#         first_cell, *_ = row
+#         if all(c.value is None for c in row):
+#             yield False
 
-    #     else:
-    #         pass
+#         elif first_cell.value and regex.search(all_field_regex, first_cell.value):
+#             yield False
+
+#         else:
+#             yield row
+
+
+# for primary_key, table_data in all_keys.items():
+#     row_start = table_data["schema_row_start"]
+#     row_end = table_data["schema_row_end"]
+#     primary_text = regex.search(
+#         r"(?<=: )\w+", sheet.cell(row=row_start, column=1).value
+#     )
+#     is_col = table_data["is_column"]
+#     field_type = sheet.cell(row=row_start+1, column=1).value
+#     sub_dict = dict()
+#     prev_row = (None)
+#     map_range = regex.search(r"(?<=Values: ?)\d+-\d+$", field_type)
+#     table_rows = sheet.iter_rows(min_row=row_start, max_row=row_end)
+#     sub_tables = dict()
+
+#     if map_range:
+        # value_map_start = map_range.group(0).split("-")[0]
+        # value_map_end = map_range.group(0).split("-")[1]
+        
+        # if str.isnumeric(value_map_start) and str.isnumeric(value_map_end):
+        #     encoding_start = row_start + 2
+        #     encoding_end = row_start + (int(value_map_end) - int(value_map_start)) + 2
+        #     encoding_table = [
+        #         [c.value for c in r]
+        #         for r in sheet.iter_rows(min_col=2, max_col=3, min_row=encoding_start, max_row=encoding_end)
+        #     ]
+        #     all_keys[primary_key]["encodings"] = dict(encoding_table)
+
+        # else:
+        #     print(f"Found Non-Numeric Value Map {map_range} for {primary_key}. Skipping.")
+        #     continue
+
+#         if is_col:
+#             all_keys[primary_key]["column_type"] = "single_select"
+#             all_keys[primary_key]["related_columns"] = [primary_key]
+
+#         else:
+            # sub_row_start = encoding_end + 1
+            # column_rows = []
+            # next_row_iter = get_next_row_safe(sheet.iter_rows(min_row=sub_row_start, max_row=row_end))
+            # next_row = next(next_row_iter)
+            # while next_row:
+            #     column_rows.append([c.value for c in next_row if c.value])
+            #     next_row = next(next_row_iter)
+
+            # print(primary_key, json.dumps(column_rows, indent=4))
+
+
+#     else:
+#         # print(f"Found No Value Map of {field_type} for {primary_key}")
+#         all_keys[primary_key]["column_type"] = field_type
+#         if not is_col:
+#             print(f"Warning. Primary Key {primary_key} is not a column and of unknown type {field_type}.")
+
+#         else:
+#             all_keys[primary_key]["related_columns"] = [primary_key]
+        
