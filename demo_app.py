@@ -5,7 +5,7 @@ import os
 import json
 import pandas as pd
 import streamlit as st
-from utils.plot_utils import create_bar_chart, df_to_thinkcell_json
+from utils.plot_utils import create_bar_chart, df_to_thinkcell_json, create_bar_plot
 import plotly.express as px
 from plotly import graph_objects as go
 from openai import OpenAI
@@ -23,6 +23,16 @@ from utils.llm_utils import (
     retrieve_assistant_created_files
 )
 from utils.thinkcell import call_thinkcell_server
+
+
+class Variable:
+    def __init__(self, variable_id: str, variable_metadata: dict) -> None:
+        self.variable_id = variable_id
+        self.question_text = variable_metadata["question_text"]
+        self.columns = variable_metadata["related_columns"]
+        self.is_column = variable_metadata["is_column"]
+        self.encodings = variable_metadata.get("encodings")
+        self.rows = variable_metadata.get("rows")
 
 
 # Initialise the OpenAI client, and retrieve the assistant
@@ -278,27 +288,46 @@ if st.session_state.file_uploaded:
             df = load_data(data_file)
             # count_df = df[st.session_state.independent_dd].value_counts().reset_index()
             # TODO: Turn into a class so we can feed one variable to the function
-            independent_table_key = st.session_state.dropdown_selections[st.session_state.independent_dd]
-            independent_table = st.session_state.question_schema[independent_table_key]
-            independent_variable = independent_table["related_columns"][0]
-            independent_mappings = independent_table["encodings"]
+            independent_id = st.session_state.dropdown_selections[st.session_state.independent_dd]
+            independent_var = Variable(
+                variable_id=independent_id,
+                variable_metadata=st.session_state.question_schema[independent_id]
+            )
+            # independent_table_key = 
+            # independent_table = 
+            # independent_variable = independent_table["related_columns"][0]
+            # independent_mappings = independent_table["encodings"]
 
             if st.session_state.dependent_dd:
-                dep_table_key = st.session_state.dropdown_selections[st.session_state.dependent_dd]
-                dep_table = st.session_state.question_schema[dep_table_key]
-                dep_variable = dep_table["related_columns"][0]
-                dep_mappings = dep_table["encodings"]
-
+                dependent_id = st.session_state.dropdown_selections[st.session_state.dependent_dd]
+                dependent_var = Variable(
+                    variable_id=dependent_id,
+                    variable_metadata=st.session_state.question_schema[dependent_id]
+                )
+            
             else:
-                dep_variable = None
+                dependent_var = None
+            #     dep_table_key = 
+            #     dep_table = st.session_state.question_schema[dep_table_key]
+            #     dep_variable = dep_table["related_columns"][0]
+            #     dep_mappings = dep_table["encodings"]
 
-            fig, sub_df = create_bar_chart(
+            # else:
+            #     dep_variable = None
+
+            # fig, sub_df = create_bar_chart(
+            #     df=df,
+            #     primary_var=independent_variable,
+            #     secondary_var=dep_variable,
+            #     primary_values=None,#independent_variables,
+            #     barmode="stack",
+            #     mappings=independent_mappings
+            # )
+
+            fig, sub_df = create_bar_plot(
                 df=df,
-                primary_var=independent_variable,
-                secondary_var=dep_variable,
-                primary_values=None,#independent_variables,
-                barmode="stack",
-                mappings=independent_mappings
+                ivar=independent_var,
+                dvar=dependent_var
             )
 
             if "plotly_figure" not in st.session_state:
@@ -310,65 +339,65 @@ if st.session_state.file_uploaded:
 
             st.plotly_chart(st.session_state.plotly_figure)
 
-            tc_json, tc_df = df_to_thinkcell_json(sub_df, independent_variable, st.secrets.get("BARCHART_TEMPLATE"), dep_variable)
+    #         tc_json, tc_df = df_to_thinkcell_json(sub_df, independent_variable, st.secrets.get("BARCHART_TEMPLATE"), dep_variable)
             
-            if st.checkbox("Display Pivot data?"):
-                st.subheader("Pivot Data")
-                st.dataframe(tc_df, use_container_width=True, hide_index=False)
+    #         if st.checkbox("Display Pivot data?"):
+    #             st.subheader("Pivot Data")
+    #             st.dataframe(tc_df, use_container_width=True, hide_index=False)
 
-        else:
-            st.write("Please choose an independent variable to start your analysis.")
+    #     else:
+    #         st.write("Please choose an independent variable to start your analysis.")
     
-    with export_col:
-        st.subheader("Exports")
-        if st.session_state.independent_dd: # and st.session_state.filter_multi_select != []:
-            xl_filename = st.text_input(label="Input a filename for your pivot data.", placeholder="charter_pivot_data.csv")
-            if not xl_filename:
-                xl_filename = "charter_pivot_data.csv"
+    # with export_col:
+    #     st.subheader("Exports")
+    #     if st.session_state.independent_dd: # and st.session_state.filter_multi_select != []:
+    #         xl_filename = st.text_input(label="Input a filename for your pivot data.", placeholder="charter_pivot_data.csv")
+    #         if not xl_filename:
+    #             xl_filename = "charter_pivot_data.csv"
 
-            st.download_button(
-                label="Export Pivot Data",
-                file_name=xl_filename,
-                mime="text/csv",
-                data=tc_df.to_csv(index=True, header=True, encoding="utf-8"),
-                disabled=not xl_filename.endswith(".csv")
-            )
+    #         st.download_button(
+    #             label="Export Pivot Data",
+    #             file_name=xl_filename,
+    #             mime="text/csv",
+    #             data=tc_df.to_csv(index=True, header=True, encoding="utf-8"),
+    #             disabled=not xl_filename.endswith(".csv")
+    #         )
 
-            # def download_ppt_on_click(html_response)
+    #         # def download_ppt_on_click(html_response)
 
-            pptx_filename = st.text_input(
-                label="Input a filename for your PowerPoint file.",
-                placeholder="charter_plot.pptx"
-            )
+    #         pptx_filename = st.text_input(
+    #             label="Input a filename for your PowerPoint file.",
+    #             placeholder="charter_plot.pptx"
+    #         )
             
-            if not pptx_filename:
-                pptx_filename = "charter_plot.pptx"
+    #         if not pptx_filename:
+    #             pptx_filename = "charter_plot.pptx"
 
-            # st.download_button(
-            #     label="Generate and Download PPTX",
-            #     file_name=pptx_filename,
-            #     mime="application/vnd.openxmlformats-officedocument.presentationml.presentation",
-            #     data=call_thinkcell_server(tc_json) if st.session_state.run_thinkcell else None,
-            #     disabled=not pptx_filename.endswith(".pptx")
-            # )
+    #         # st.download_button(
+    #         #     label="Generate and Download PPTX",
+    #         #     file_name=pptx_filename,
+    #         #     mime="application/vnd.openxmlformats-officedocument.presentationml.presentation",
+    #         #     data=call_thinkcell_server(tc_json) if st.session_state.run_thinkcell else None,
+    #         #     disabled=not pptx_filename.endswith(".pptx")
+    #         # )
 
-            generate, download = st.columns(2)
-            with generate:
-                generate_button = st.button("Generate PowerPoint")
+    #         generate, download = st.columns(2)
+    #         with generate:
+    #             generate_button = st.button("Generate PowerPoint")
                 
 
-            with download:
-                if generate_button:
-                    if pptx_filename.endswith(".pptx"):
-                        pptx_data = call_thinkcell_server(tc_json)
-                        st.download_button(
-                            label="Download PowerPoint",
-                            file_name=pptx_filename,
-                            mime="application/vnd.openxmlformats-officedocument.presentationml.presentation",
-                            data=pptx_data
-                        )
-                    else:
-                        st.error("Filename must end with .pptx")
+    #         with download:
+    #             if generate_button:
+    #                 if pptx_filename.endswith(".pptx"):
+    #                     pptx_data = call_thinkcell_server(tc_json)
+    #                     st.download_button(
+    #                         label="Download PowerPoint",
+    #                         file_name=pptx_filename,
+    #                         mime="application/vnd.openxmlformats-officedocument.presentationml.presentation",
+    #                         data=pptx_data
+    #                     )
+    #                 else:
+    #                     st.error("Filename must end with .pptx")
 
 else:
     st.write("No files have been uploaded yet.")

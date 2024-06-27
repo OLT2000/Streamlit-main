@@ -123,7 +123,68 @@ def type_helper(variable):
         
         else:
             raise TypeError(f"Cannot determine appropriate dtype of {var}.\nVariable is of type {type(var)}")
- 
+        
+
+def create_bar_plot(df: pd.DataFrame, ivar, dvar=None):
+    if not ivar.is_column:
+        warning(f"Compatibility for multi-select independent variables not yet developed.")
+        return None, None
+
+    else:
+        assert len(ivar.columns) == 1
+        ind_column = ivar.columns[0]
+
+    if not dvar:
+        grouped_df = df[ind_column].value_counts().reset_index()
+        if ivar.encodings:
+            print("Mappings: ", ivar.encodings)
+            grouped_df.replace({ind_column: ivar.encodings}, inplace=True)
+
+        fig = px.bar(grouped_df, x=ind_column, y='count', text='count', color_discrete_sequence=colors)
+        
+    else:
+        if not dvar.is_column:
+            warning(f"Compatibility for multi-select dependent variables not yet developed.")
+            return None, None
+        
+        else:
+            assert len(dvar.columns) == 1
+            dep_column = dvar.columns[0]
+        
+        grouped_df = df.groupby(
+            [ind_column, dep_column]
+        ).size()\
+        .reset_index(name="count")\
+        .sort_values(by=[ind_column, "count"], ascending=[True, False])\
+        .replace({ind_column: ivar.encodings, dep_column: dvar.encodings})
+
+        
+
+        fig = px.bar(grouped_df, x=ind_column, y='count', color=dep_column, text='count', color_discrete_sequence=colors)
+        fig.update_layout(legend_title_text=dvar.question_text)
+
+    fig.update_layout(
+        # title='Bar Chart',
+        xaxis_title=ivar.question_text,
+        yaxis_title='Count',
+        barmode="stack",
+        legend=dict(
+            orientation="h",
+            entrywidth=0.0,
+            entrywidthmode="pixels",
+            yanchor="bottom",
+            y=1.02,
+            xanchor="center",
+            x=0.5
+        ),
+    )
+
+    # fig.update_xaxes(type="category")
+    fig.update_traces(textangle=0)
+
+    # print(fig.data)
+    return fig, grouped_df
+
 
 def create_bar_chart(df: pd.DataFrame, primary_var, secondary_var, primary_values, barmode, mappings):
     print(mappings)
