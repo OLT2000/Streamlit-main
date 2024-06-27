@@ -12,7 +12,7 @@ import openpyxl.worksheet.worksheet
 
 # Define our Regular Expressions
 identifier_regex = regex.compile(r"(?<=^)\[?[\w^\]^:]+\]?:")
-non_metadata_regex = regex.compile(r'(?<=^)(S|Q)\d+(?=\w+)')
+non_metadata_regex = regex.compile(r'(?<=^)(S|Q)\d+(?=\w*)')
 question_text_regex = regex.compile(r"(?<=\[?\w+\]?: ).+")
 value_match_regex = regex.compile(r"(?<=Values: ?)\d+-\d+$")
 
@@ -45,6 +45,7 @@ def load_worksheet(
 
 def row_iterator(row_generator):
     for row in row_generator:
+        clean_excel_row(row)
         first_cell, *_ = row
         if all(c.value is None for c in row):
             yield False
@@ -56,19 +57,23 @@ def row_iterator(row_generator):
             yield row
 
 
-def clean_excel_row(row: tuple, worksheet: openpyxl.worksheet.worksheet.Worksheet) -> None:
+def clean_excel_row(row: tuple) -> None:
     for cell in row:
         if cell.value == "":
-            worksheet.cell(row=cell.row, column=cell.column).value = None
+            cell.value = None
 
 
-def process_atheneum_schema(schema_sheet: openpyxl.worksheet.worksheet.Worksheet) -> dict:
+def process_atheneum_schema(excel_file, sheet_name = "Datamap"):
+# def process_atheneum_schema(schema_sheet: openpyxl.worksheet.worksheet.Worksheet) -> dict:
+    wb = load_workbook(excel_file)
+    schema_sheet = load_worksheet(workbook=wb, sheet_name=sheet_name)
+
     cleaned_keys: dict = dict()
     previous_row = tuple()
 
     # Loop through the sheet rows
     for row in schema_sheet.iter_rows():
-        clean_excel_row(row, schema_sheet)
+        clean_excel_row(row)
         first_cell, *_ = row
         assert first_cell.column == 1
         # If the previous row is empty, we have started a new table
@@ -124,7 +129,7 @@ def process_atheneum_schema(schema_sheet: openpyxl.worksheet.worksheet.Worksheet
 
                         # Process the encodings table
                         encodings_table = [
-                            [cell.value for cell in code_row]
+                            [str(cell.value) for cell in code_row]
                             for code_row in schema_sheet.iter_rows(min_col=2, max_col=3, min_row=encoding_start_row, max_row=encoding_end_row)
                         ]
 
@@ -144,7 +149,11 @@ def process_atheneum_schema(schema_sheet: openpyxl.worksheet.worksheet.Worksheet
                     question_rows = dict()
                     while next_row:
                         non_null_row = [cell.value for cell in next_row if cell.value]
-                        if len(non_null_row) != 2:
+                        if len(non_null_row) == 1:
+                            print(f"Could not find a valid encoding, defaulting to [{non_null_row[0]}, None]")
+                            non_null_row.append(None)
+
+                        elif len(non_null_row) != 2:
                             print(f"Row encoding error for {current_key} at row {row_definition_start}. The values are: {non_null_row}")
 
                         else:
@@ -166,8 +175,8 @@ def process_atheneum_schema(schema_sheet: openpyxl.worksheet.worksheet.Worksheet
 
 if __name__ == "__main__":
     filepath = Path.cwd() / "survey_pk" / "Database and questions.xlsx"
-    wb = load_workbook(filepath=filepath)
-    sheet = load_worksheet(workbook=wb, sheet_name="Datamap")
+    # wb = load_workbook(filepath=filepath)
+    # sheet = load_worksheet(workbook=wb, sheet_name="Datamap")
 
-    test_keys = process_atheneum_schema(sheet)
+    test_keys = process_atheneum_schema(filepath)
     print(json.dumps(test_keys, indent=4))

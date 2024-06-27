@@ -10,7 +10,7 @@ import plotly.express as px
 from plotly import graph_objects as go
 from openai import OpenAI
 from io import BytesIO
-from utils.data_engineering import load_question_schema
+from utils.data_engineering import process_atheneum_schema
 from utils.llm_utils import (
     delete_files,
     delete_thread,
@@ -70,9 +70,6 @@ def load_data(uploaded_data_file, **kwargs):
         elif uploaded_data_file.name.endswith(tuple(EXCEL_EXTENSIONS - {".csv"})):
             data = pd.read_excel(uploaded_data_file, sheet_name=0).astype(str)
 
-            
-        
-
     # except UnicodeDecodeError:
     #     return load_data(uploaded_data_file=uploaded_data_file, encoding="cp1252")
         
@@ -112,7 +109,7 @@ st.subheader("Data Interrogation Platform for Management Consultants.\nBegin by 
 
 # File upload widgets
 # TODO: Look into using keys here instead of the variable
-data_file = st.file_uploader("Upload some CSV data", type=EXCEL_EXTENSIONS)
+data_file = st.file_uploader("Upload some survey data", type=EXCEL_EXTENSIONS)
 
 # schema_flag = st.toggle("Use Column Schema?")
 # schema_file = st.file_uploader("Upload a schema to support your analysis.", type=("json"), disabled=not schema_flag)
@@ -125,23 +122,25 @@ if data_file is not None:
     if "data_file" not in st.session_state:
         st.session_state.data_file = data_file
 
-
     if data_file != st.session_state.data_file:
         st.session_state.data_file = data_file
 
     if "question_schema" not in st.session_state:
 
-        schema = load_question_schema(data_file, "Questions")
+        schema = process_atheneum_schema(data_file)
+        reverse_key_map_no_metadata = {value["question_text"]: key for key, value in schema.items() if not value["is_metadata"]}
+        print(reverse_key_map_no_metadata)
 
-        field_text_to_key = {}
-        for key, value in schema.items():
-            field_text = value['field_text']
-            if field_text not in field_text_to_key:
-                field_text_to_key[field_text] = []
-            field_text_to_key[field_text].append(key)
+        # field_text_to_key = {}
+        # for key, value in schema.items():
+        #     field_text = value['field_text']
+        #     if field_text not in field_text_to_key:
+        #         field_text_to_key[field_text] = []
+        #     field_text_to_key[field_text].append(key)
 
-        st.session_state.field_text_key_map = field_text_to_key
+        # st.session_state.field_text_key_map = field_text_to_key
         st.session_state.question_schema = schema
+        st.session_state.dropdown_selections = reverse_key_map_no_metadata
 
     data = load_data(data_file)
     # uploaded_data_file = client.files.create(file=open(data_file.name, "rb"), purpose="assistants")
@@ -195,20 +194,20 @@ if st.session_state.file_uploaded:
         
         st.selectbox(
             label="Select your Independent Variable",
-            options=st.session_state.columns,
+            options=list(st.session_state.dropdown_selections.keys()),
             index=None,
             key="independent_dd",
             on_change=on_change_independent_var
         )
 
-        if st.session_state.independent_dd:
-            independent_variables = load_data(data_file, _usecols=st.session_state.independent_dd)[st.session_state.independent_dd].unique().tolist()
-            default_filter_values = independent_variables
-            filter_options = ["All"] + independent_variables
+        # if st.session_state.independent_dd:
+        #     independent_variables = load_data(data_file, _usecols=st.session_state.independent_dd)[st.session_state.independent_dd].unique().tolist()
+        #     default_filter_values = independent_variables
+        #     filter_options = ["All"] + independent_variables
         
-        else:
-            filter_options = []
-            default_filter_values = None
+        # else:
+        #     filter_options = []
+        #     default_filter_values = None
 
         # # Research the best way to store DFs when calling them so often.
         # def multi_select_all():
@@ -230,46 +229,46 @@ if st.session_state.file_uploaded:
 
         st.selectbox(
             "Select an Optional Dependent Variable",
-            options=[c for c in st.session_state.columns if c != st.session_state.independent_dd],
+            options=[c for c in st.session_state.dropdown_selections.keys() if c != st.session_state.independent_dd],
             index=None,
             key="dependent_dd"
         )
 
-        st.selectbox(
-            label="Select a Question to Analyse.",
-            options=st.session_state.field_text_key_map.keys(),
-            index=None,
-            key="question_selection"
-        )
+        # st.selectbox(
+        #     label="Select a Question to Analyse.",
+        #     options=st.session_state.dropdown_selections,
+        #     index=None,
+        #     key="question_selection"
+        # )
 
-        if st.session_state.question_selection:
-            field_codes = st.session_state.field_text_key_map[st.session_state.question_selection]
-            if not len(field_codes) == 1:
-                st.warning(f"Available Codes: {field_codes}")
+        # if st.session_state.question_selection:
+        #     field_codes = st.session_state.field_text_key_map[st.session_state.question_selection]
+        #     if not len(field_codes) == 1:
+        #         st.warning(f"Available Codes: {field_codes}")
 
-            else:
-                selected_field = field_codes[0]
-                selected_schema = st.session_state.question_schema[selected_field]
-                if selected_schema["question_type"] == "table":
-                    sub_fields = [r["sub_field"] for r in selected_schema["rows"]]
-                    sub_field_disabled = False
+        #     else:
+        #         selected_field = field_codes[0]
+        #         selected_schema = st.session_state.question_schema[selected_field]
+        #         if selected_schema["question_type"] == "table":
+        #             sub_fields = [r["sub_field"] for r in selected_schema["rows"]]
+        #             sub_field_disabled = False
 
-                else:
-                    sub_fields = []
-                    sub_field_disabled = True
+        #         else:
+        #             sub_fields = []
+        #             sub_field_disabled = True
 
-        else:
-            sub_fields = []
-            sub_field_disabled = True      
+        # else:
+        #     sub_fields = []
+        #     sub_field_disabled = True      
 
         
-        st.selectbox(
-            "Select a sub-topic to analyse.",
-            options=sub_fields,
-            index=None,
-            disabled=sub_field_disabled,
-            key="question_sub_field"
-        )
+        # st.selectbox(
+        #     "Select a sub-topic to analyse.",
+        #     options=sub_fields,
+        #     index=None,
+        #     disabled=sub_field_disabled,
+        #     key="question_sub_field"
+        # )
 
             
 
@@ -277,32 +276,46 @@ if st.session_state.file_uploaded:
         st.subheader("Results")
         if st.session_state.independent_dd: # and st.session_state.filter_multi_select != []:
             df = load_data(data_file)
-            count_df = df[st.session_state.independent_dd].value_counts().reset_index()
+            # count_df = df[st.session_state.independent_dd].value_counts().reset_index()
+            # TODO: Turn into a class so we can feed one variable to the function
+            independent_table_key = st.session_state.dropdown_selections[st.session_state.independent_dd]
+            independent_table = st.session_state.question_schema[independent_table_key]
+            independent_variable = independent_table["related_columns"][0]
+            independent_mappings = independent_table["encodings"]
+
+            if st.session_state.dependent_dd:
+                dep_table_key = st.session_state.dropdown_selections[st.session_state.dependent_dd]
+                dep_table = st.session_state.question_schema[dep_table_key]
+                dep_variable = dep_table["related_columns"][0]
+                dep_mappings = dep_table["encodings"]
+
+            else:
+                dep_variable = None
 
             fig, sub_df = create_bar_chart(
                 df=df,
-                primary_var=st.session_state.independent_dd,
-                secondary_var=st.session_state.dependent_dd,
-                primary_values=independent_variables,
-                barmode="stack"
+                primary_var=independent_variable,
+                secondary_var=dep_variable,
+                primary_values=None,#independent_variables,
+                barmode="stack",
+                mappings=independent_mappings
             )
-
-            tc_json, tc_df = df_to_thinkcell_json(sub_df, st.session_state.independent_dd, st.secrets.get("BARCHART_TEMPLATE"), st.session_state.dependent_dd)
 
             if "plotly_figure" not in st.session_state:
                 st.session_state.plotly_figure = fig
-            
+
             else:
                 if st.session_state.plotly_figure != fig:
                     st.session_state.plotly_figure = fig
 
             st.plotly_chart(st.session_state.plotly_figure)
 
+            tc_json, tc_df = df_to_thinkcell_json(sub_df, independent_variable, st.secrets.get("BARCHART_TEMPLATE"), dep_variable)
+            
             if st.checkbox("Display Pivot data?"):
                 st.subheader("Pivot Data")
                 st.dataframe(tc_df, use_container_width=True, hide_index=False)
 
-            
         else:
             st.write("Please choose an independent variable to start your analysis.")
     

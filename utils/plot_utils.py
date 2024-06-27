@@ -125,20 +125,23 @@ def type_helper(variable):
             raise TypeError(f"Cannot determine appropriate dtype of {var}.\nVariable is of type {type(var)}")
  
 
-def create_bar_chart(df, primary_var, secondary_var, primary_values, barmode):
+def create_bar_chart(df: pd.DataFrame, primary_var, secondary_var, primary_values, barmode, mappings):
+    print(mappings)
     # df = df.sort_values(by=[primary_var, secondary_var], ascending=True, inplace=False)
     if secondary_var:
         # Case 2: Stacked bar chart
         # Grouping by primary and secondary variable to get counts
-        grouped_df = df.loc[df[primary_var].isin(primary_values)].groupby([primary_var, secondary_var]).size().reset_index(name='count').sort_values(by=[primary_var, "count"], ascending=[True, False])
+        grouped_df = df.groupby([primary_var, secondary_var]).size().reset_index(name='count').sort_values(by=[primary_var, "count"], ascending=[True, False])
 
         fig = px.bar(grouped_df, x=primary_var, y='count', color=secondary_var, text='count', color_discrete_sequence=colors)
         
     else:
         # Case 1: Simple bar chart
         # Grouping by primary variable to get counts
-        grouped_df = df.loc[df[primary_var].isin(primary_values)][primary_var].value_counts().reset_index()
-        grouped_df.columns = [primary_var, 'count']
+        grouped_df = df[primary_var].value_counts().reset_index()
+        grouped_df.replace({primary_var: mappings}, inplace=True)
+        # grouped_df.columns = [primary_var, 'count']
+        print(grouped_df.head(10))
         fig = px.bar(grouped_df, x=primary_var, y='count', text='count', color_discrete_sequence=colors)
 
     fig.update_layout(
