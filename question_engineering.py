@@ -1,56 +1,4 @@
 
-import openpyxl
-import json
-from pathlib import Path
-from typing import List
-import openpyxl.workbook
-import re
-
-
-def load_workbook(filepath: Path) -> openpyxl.workbook.workbook.Workbook:
-    if filepath.suffix != ".xlsx":
-        raise ValueError(
-            f"The inputted file is of type {filepath.suffix}. Please provide a .xlsx file."
-        )
-
-    try:
-        workbook = openpyxl.load_workbook(filepath)
-
-    except Exception as e:
-        raise f"An unexpected error occurred: {e}"
-
-    else:
-        return workbook
-
-
-def load_worksheet(
-    workbook: openpyxl.workbook.workbook.Workbook, sheet_name: str
-) -> openpyxl.worksheet.worksheet.Worksheet:
-    if sheet_name not in workbook.sheetnames:
-        raise KeyError(f"Sheet '{sheet_name}' cannot be found in workbook.")
-
-    else:
-        return workbook[sheet_name]
-
-
-def parse_sheet_data(worksheet: openpyxl.worksheet.worksheet.Worksheet) -> List[List]:
-    tables = []
-    current_table = []
-    for row in worksheet.iter_rows(values_only=True):
-        if all(cell is None for cell in row):
-            if current_table:
-                tables.append(current_table)
-                current_table = []
-
-        else:
-            current_table.append([r for r in row if r is not None])
-
-    if current_table:
-        tables.append(current_table)
-
-    return tables
-
-
 def parse_table_data(table: List[List]) -> dict:
     if len(table) < 2:
         return None
@@ -81,18 +29,21 @@ def load_question_schema(filepath: Path, sheet_name: str) -> List[dict]:
     row_match_pattern = re.compile(r".*(R\d+){1}(_97_OTH|_97_OTH_english_uk)?$")
     row_look_behind = re.compile(r"^(.*)(?=((R\d+)(_97_OTH|_97_OTH_english_uk)?)$)")
     other_match_pattern = re.compile(r".*(_97_OTH|_97_OTH_english_uk)$")
+    other_look_behind = re.compile(r"^(.*)(?=(_97_OTH|_97_OTH_english_uk)$)")
 
 
     result_dict = dict()
 
     for table in processed_tables:
         field_code, field_text = table.pop(0)
+        if field_code.startswith("QSFUNCTION_97_OTH"):
+            print("HERE")
         response_type = table.pop(0)[1]
         encodings = {key: value for key, value in table if key is not None}
 
         # Remove non-Q fields:
         if not field_code.startswith("Q"):
-            # print(f"Non Q-field {field_code}")
+            print(f"Non Q-field {field_code}")
             result_dict[field_code] = {
                 "field_text": field_text,
                 "response_type": response_type,
@@ -172,6 +123,29 @@ def load_question_schema(filepath: Path, sheet_name: str) -> List[dict]:
                         key_data["rows"].append(
                             secondary_dict
                         )
+
+            elif re.match(other_match_pattern, field_code):
+                primary_key = re.search(other_look_behind, field_code).group(0)
+                if primary_key not in result_dict:
+                    print(f"Could not find primary key {primary_key} for other code {field_code}.")
+                    result_dict[primary_key] = {
+                        "field_text": "",
+                        "response_type": response_type,
+                        "encodings": encodings,
+                        "question_type": "single"
+                    }
+
+                else:
+                    if field_code.endswith("english_uk"):
+                        result_dict[primary_key]["other_translation_col"] = field_code
+                    
+                    elif field_code.endswith("_97_OTH"):
+                        result_dict[primary_key]["other_col"] = field_code
+
+                    else:
+                        print(f"Non-other column found: {field_code}.")
+
+                
             
             else:
                 # print(f"Other field: {field_code}")
@@ -183,8 +157,8 @@ def load_question_schema(filepath: Path, sheet_name: str) -> List[dict]:
             }
 
 
-
-    return [parse_table_data(t) for t in processed_tables]
+    return result_dict
+    # return [parse_table_data(t) for t in processed_tables]
 
 
 if __name__ == "__main__":

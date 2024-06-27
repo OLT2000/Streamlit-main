@@ -4,7 +4,17 @@ import json
 from pathlib import Path
 from typing import List
 import openpyxl.workbook
-import re
+import regex
+
+import openpyxl.worksheet
+import openpyxl.worksheet.worksheet
+
+
+# Define our Regular Expressions
+identifier_regex = regex.compile(r"(?<=^)\[?[\w^\]^:]+\]?:")
+non_metadata_regex = regex.compile(r'(?<=^)(S|Q)\d+(?=\w+)')
+question_text_regex = regex.compile(r"(?<=\[?\w+\]?: ).+")
+value_match_regex = regex.compile(r"(?<=Values: ?)\d+-\d+$")
 
 
 def load_workbook(filepath: Path) -> openpyxl.workbook.workbook.Workbook:
@@ -33,217 +43,131 @@ def load_worksheet(
         return workbook[sheet_name]
 
 
-def parse_sheet_data(worksheet: openpyxl.worksheet.worksheet.Worksheet) -> List[List]:
-    tables = []
-    current_table = []
-    for row in worksheet.iter_rows(values_only=True):
-        if all(cell is None for cell in row):
-            if current_table:
-                tables.append(current_table)
-                current_table = []
+def row_iterator(row_generator):
+    for row in row_generator:
+        first_cell, *_ = row
+        if all(c.value is None for c in row):
+            yield False
+
+        elif first_cell.value and regex.search(identifier_regex, first_cell.value):
+            yield False
 
         else:
-            current_table.append([r for r in row if r is not None])
-
-    if current_table:
-        tables.append(current_table)
-
-    return tables
+            yield row
 
 
-def parse_table_data(table: List[List]) -> dict:
-    if len(table) < 2:
-        return None
-
-    column_name, column_description = table.pop(0)
-    column_type = table.pop(0)[1]
-    encodings = {key: value for key, value in table if key is not None}
-
-    return {
-        "column_name": column_name,
-        "column_description": column_description,
-        "column_type": column_type,
-        "encodings": encodings,
-    }
+def clean_excel_row(row: tuple, worksheet: openpyxl.worksheet.worksheet.Worksheet) -> None:
+    for cell in row:
+        if cell.value == "":
+            worksheet.cell(row=cell.row, column=cell.column).value = None
 
 
-# def process_all_tables(processed_tables: list[dict]):
-#     current_key = None
+def process_atheneum_schema(schema_sheet: openpyxl.worksheet.worksheet.Worksheet) -> dict:
+    cleaned_keys: dict = dict()
+    previous_row = tuple()
 
-#     for table in processed_tables:
+    # Loop through the sheet rows
+    for row in schema_sheet.iter_rows():
+        clean_excel_row(row, schema_sheet)
+        first_cell, *_ = row
+        assert first_cell.column == 1
+        # If the previous row is empty, we have started a new table
+        if all(cell.value is None for cell in previous_row):
+            # Extract the table ID (I.E. The first element of the sub-table)
+            identifier_match = regex.search(identifier_regex, first_cell.value)
+            if not identifier_match:
+                print(f"Could not identify an identifier for the value {first_cell.value} in position ({first_cell.row}, {first_cell.column}). Skipping.")
+                continue
 
+            else:
+                table_id = identifier_match.group(0)
 
+            is_column: bool = regex.search(r"^\[\w+\]:$", table_id) is not None
+            if is_column:
+                table_key = table_id[1:-2]
 
-def load_question_schema(filepath: Path, sheet_name: str) -> List[dict]:
-    wb = load_workbook(filepath=filepath)
-    sheet = load_worksheet(workbook=wb, sheet_name=sheet_name)
-    processed_tables = parse_sheet_data(sheet)
-    row_match_pattern = re.compile(r".*(R\d+){1}(_97_OTH|_97_OTH_english_uk)?$")
-    row_look_behind = re.compile(r"^(.*)(?=((R\d+)(_97_OTH|_97_OTH_english_uk)?)$)")
-    other_match_pattern = re.compile(r".*(_97_OTH|_97_OTH_english_uk)$")
-    other_look_behind = re.compile(r"^(.*)(?=(_97_OTH|_97_OTH_english_uk)$)")
+            else:
+                table_key = table_id
 
+            if table_key in cleaned_keys:
+                print(f"Found a duplicate table key {table_key}. Skipping.")
+                continue
 
-    result_dict = dict()
+            else:
+                question_text = regex.search(question_text_regex, first_cell.value)
 
-    for table in processed_tables:
-        field_code, field_text = table.pop(0)
-        if field_code.startswith("QSFUNCTION_97_OTH"):
-            print("HERE")
-        response_type = table.pop(0)[1]
-        encodings = {key: value for key, value in table if key is not None}
-
-        # Remove non-Q fields:
-        if not field_code.startswith("Q"):
-            print(f"Non Q-field {field_code}")
-            result_dict[field_code] = {
-                "field_text": field_text,
-                "response_type": response_type,
-                "encodings": encodings,
-                "question_type": "single"
-            }
-
-        # Market Quotas
-        elif field_code.startswith("QMKT"):
-            # print(f"Quota Field {field_code}")
-            result_dict[field_code] = {
-                "field_text": field_text,
-                "response_type": response_type,
-                "encodings": encodings,
-                "question_type": "quotas"
-            }
-            # I think this will require some quite complex DE as it seems to use rules and other columns.
-            # For example, "QUOTA \| by country - current user of target brand (SFUNN = 6)"
-            #               Is a quota of the previous data QTARGET, grouped by country.
-            # primary_key = field_code[4:]
-
-        else:
-            field_code = field_code[1:]
-            # Identify tabular questions
-            if re.match(row_match_pattern, field_code):
-                # print(f"Identified row: {field_code}. Field Text: {field_text}")
-                primary_key = re.search(row_look_behind, field_code).group(0)
-                # print(other_match_pattern, re.match(other_match_pattern, field_code))
-                if re.match(other_match_pattern, field_code):
-                    primary_text = field_text
-                    secondary_text = ""
-                else:
-                    primary_text, secondary_text = field_text.split(" | ", 1)
-
-                # print(field_code)
-                row_number = re.search(
-                    # r"(?<=R)\d+$",
-                    r"(?<=R)\d+(|_97_OTH|_97_OTH_english_uk)$",
-                    re.search(row_match_pattern, field_code).group(0)
-                ).group(0)
-
-                secondary_dict = {
-                                "sub_field": secondary_text,
-                                "row_number": row_number,
-                                "column": field_code
-                            }
+                if not question_text:
+                    print(f"No question text found for table key {table_key}.")
+                    question_text = ""
                 
-                if primary_key not in result_dict:
-                    result_dict[primary_key] = {
-                        "field_text": primary_text,
-                        "response_type": response_type,
-                        "encodings": encodings,
-                        "question_type": "table",
-                        "rows": [
-                            secondary_dict
+                else:
+                    question_text = question_text.group(0)
+
+                cleaned_keys[table_key] = {
+                    "question_text": question_text,
+                    "is_column": is_column,
+                    "is_metadata": regex.search(non_metadata_regex, table_key) is None,
+                    "schema_row_start": first_cell.row
+                }
+            
+            current_key = table_key
+        
+        else:
+            # The cell below the table key should be the encoding/field type
+            if first_cell.row == cleaned_keys[current_key]["schema_row_start"] + 1:
+                field_type = regex.search(value_match_regex, first_cell.value)
+                if field_type:
+                    value_map_range = field_type.group(0).split("-")
+                    if str.isnumeric(value_map_range[0]) and str.isnumeric(value_map_range[1]):
+                        encoding_start_row = first_cell.row + 1
+                        encoding_end_row = encoding_start_row + (int(value_map_range[1]) - int(value_map_range[0]))
+
+                        # Process the encodings table
+                        encodings_table = [
+                            [cell.value for cell in code_row]
+                            for code_row in schema_sheet.iter_rows(min_col=2, max_col=3, min_row=encoding_start_row, max_row=encoding_end_row)
                         ]
-                    }
 
-                else:
-                    # Check everything matches
-                    key_data = result_dict[primary_key]
-                    if not re.match(
-                        other_match_pattern,
-                        field_code
-                    ):
-                        assert primary_text == key_data["field_text"], f"Current field {field_code} does not match the results found:\n\t{key_data}."
-
-                        assert response_type == key_data["response_type"], f"Current field {field_code} does not match the results found:\n\t{key_data}."
-
-                        assert row_number not in [r["row_number"] for r in key_data["rows"]], f"Found duplicate row numbers {row_number} for field code {field_code}."
-
-                        assert field_code not in [r["column"] for r in key_data["rows"]], f"Found duplicate field codes {field_code}."
-
-                        for code, val in encodings.items():
-                            assert val == key_data["encodings"][code], f"Encodings do not match for field code {field_code}."
-
-                        key_data["rows"].append(
-                            secondary_dict
-                        )
-
-            elif re.match(other_match_pattern, field_code):
-                primary_key = re.search(other_look_behind, field_code).group(0)
-                if primary_key not in result_dict:
-                    print(f"Could not find primary key {primary_key} for other code {field_code}.")
-                    result_dict[primary_key] = {
-                        "field_text": "",
-                        "response_type": response_type,
-                        "encodings": encodings,
-                        "question_type": "single"
-                    }
-
-                else:
-                    if field_code.endswith("english_uk"):
-                        result_dict[primary_key]["other_translation_col"] = field_code
-                    
-                    elif field_code.endswith("_97_OTH"):
-                        result_dict[primary_key]["other_col"] = field_code
+                        cleaned_keys[current_key]["encodings"] = dict(encodings_table)
 
                     else:
-                        print(f"Non-other column found: {field_code}.")
+                        print(f"Found Non-Numeric Value Map '{field_type.group(0)}' for {current_key}. Skipping.")
+                        continue
 
-                
-            
-            else:
-                # print(f"Other field: {field_code}")
-                result_dict[field_code] = {
-                "field_text": field_text,
-                "response_type": response_type,
-                "encodings": encodings,
-                "question_type": "single"
-            }
+                if cleaned_keys[current_key]["is_column"]:
+                    cleaned_keys[current_key]["related_columns"] = [current_key]
 
+                else:
+                    row_definition_start = encoding_end_row + 1
+                    row_iter_tool = row_iterator(schema_sheet.iter_rows(min_row=row_definition_start))
+                    next_row = next(row_iter_tool)
+                    question_rows = dict()
+                    while next_row:
+                        non_null_row = [cell.value for cell in next_row if cell.value]
+                        if len(non_null_row) != 2:
+                            print(f"Row encoding error for {current_key} at row {row_definition_start}. The values are: {non_null_row}")
 
-    return result_dict
-    # return [parse_table_data(t) for t in processed_tables]
+                        else:
+                            row_id, row_text = non_null_row
+                            question_rows[row_id] = {
+                                "row_number": row_id.rsplit("r", 1)[-1],
+                                "row_text": row_text
+                            }
+                        
+                        next_row = next(row_iter_tool)
+                    
+                    cleaned_keys[current_key]["related_columns"] = list(question_rows.keys())
+                    cleaned_keys[current_key]["rows"] = question_rows
+
+        previous_row = row
+
+    return cleaned_keys
 
 
 if __name__ == "__main__":
-    import pandas as pd
-    file_path = Path(__file__).parent.parent / "survey.xlsx"
-    json_output = load_question_schema(filepath=file_path, sheet_name="Questions")
-    survey_fields = dict()
-    other_fields = dict()
-    # for metadata in json_output:
-    #     col_name = metadata.pop("column_name")
-    #     if col_name.startswith("Q"):
-    #         survey_fields[col_name] = metadata
-    #     else:
-    #         other_fields[col_name] = metadata
-    # question_df = pd.DataFrame.from_records(json_output).drop(columns=["encodings"])
+    filepath = Path.cwd() / "survey_pk" / "Database and questions.xlsx"
+    wb = load_workbook(filepath=filepath)
+    sheet = load_worksheet(workbook=wb, sheet_name="Datamap")
 
-    # def str_helper(row):
-    #     if row["column_type"] == "checkbox" and "_" in row["column_name"]:
-    #         output = row["column_name"].split("_", 1)
-        
-    #     else:
-    #         output = [row["column_name"], ""]
-        
-    #     return output
-        
-    # question_df[["qcode", "subq"]] = question_df.apply(lambda r: str_helper(r), axis=1, result_type="expand")
-    # with pd.option_context({"display.max_columns": None}):
-    #     print(question_df.head(20))
-    # print(json.dumps())
-    # with open("question_schema.json", "w") as f:
-    #     json.dump(json_output, f, indent=4)
-
-
-    # data = pd.read_excel(file_path, sheet_name="Data", header=0)
-    # with open("../survey_data.csv", "w") as f:
-    #     data.to_csv(f, header=True, index=False)
+    test_keys = process_atheneum_schema(sheet)
+    print(json.dumps(test_keys, indent=4))
