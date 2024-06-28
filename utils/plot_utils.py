@@ -128,7 +128,8 @@ def type_helper(variable):
 def create_bar_plot(df: pd.DataFrame, ivar, dvar=None):
     if not ivar.is_column:
         warning(f"Compatibility for multi-select independent variables not yet developed.")
-        return None, None
+        df = df.loc[:, ivar.columns]\
+            .melt(var_name='columns', value_name='values')
 
     else:
         assert len(ivar.columns) == 1
@@ -139,7 +140,7 @@ def create_bar_plot(df: pd.DataFrame, ivar, dvar=None):
         if ivar.encodings:
             print("Mappings: ", ivar.encodings)
             grouped_df.replace({ind_column: ivar.encodings}, inplace=True)
-
+        print("Single Variable\n", grouped_df.head())
         fig = px.bar(grouped_df, x=ind_column, y='count', text='count', color_discrete_sequence=colors)
         
     else:
@@ -159,7 +160,7 @@ def create_bar_plot(df: pd.DataFrame, ivar, dvar=None):
         .replace({ind_column: ivar.encodings, dep_column: dvar.encodings})
 
         
-
+        print("Two Variables\n", grouped_df.head())
         fig = px.bar(grouped_df, x=ind_column, y='count', color=dep_column, text='count', color_discrete_sequence=colors)
         fig.update_layout(legend_title_text=dvar.question_text)
 

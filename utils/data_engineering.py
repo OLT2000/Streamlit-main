@@ -158,7 +158,7 @@ def process_atheneum_schema(excel_file, sheet_name = "Datamap"):
 
                         else:
                             row_id, row_text = non_null_row
-                            question_rows[row_id] = {
+                            question_rows[row_id[1:-1]] = {
                                 "row_number": row_id.rsplit("r", 1)[-1],
                                 "row_text": row_text
                             }

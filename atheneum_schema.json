@@ -1,0 +1,1224 @@
+{
+    "record": {
+        "question_text": "Record number",
+        "is_column": true,
+        "is_metadata": true,
+        "schema_row_start": 1,
+        "related_columns": [
+            "record"
+        ]
+    },
+    "uuid": {
+        "question_text": "Participant identifier",
+        "is_column": true,
+        "is_metadata": true,
+        "schema_row_start": 4,
+        "related_columns": [
+            "uuid"
+        ]
+    },
+    "date": {
+        "question_text": "Completion time and date",
+        "is_column": true,
+        "is_metadata": true,
+        "schema_row_start": 7,
+        "related_columns": [
+            "date"
+        ]
+    },
+    "markers": {
+        "question_text": "Acquired markers",
+        "is_column": true,
+        "is_metadata": true,
+        "schema_row_start": 10,
+        "related_columns": [
+            "markers"
+        ]
+    },
+    "status": {
+        "question_text": "Participant status",
+        "is_column": true,
+        "is_metadata": true,
+        "schema_row_start": 13,
+        "encodings": {
+            "1": "Terminated",
+            "2": "Overquota",
+            "3": "Qualified",
+            "4": "Partial"
+        },
+        "related_columns": [
+            "status"
+        ]
+    },
+    "HidSamp": {
+        "question_text": "Hidden to punch sample",
+        "is_column": true,
+        "is_metadata": true,
+        "schema_row_start": 20,
+        "encodings": {
+            "1": "AP",
+            "2": "Panel Partner"
+        },
+        "related_columns": [
+            "HidSamp"
+        ]
+    },
+    "Q0": {
+        "question_text": "Please choose your language preference:",
+        "is_column": true,
+        "is_metadata": false,
+        "schema_row_start": 25,
+        "encodings": {
+            "1": "English",
+            "2": "Deutsch",
+            "3": "Fran\u00e7ais"
+        },
+        "related_columns": [
+            "Q0"
+        ]
+    },
+    "S1": {
+        "question_text": "Which geography do you cover?",
+        "is_column": true,
+        "is_metadata": false,
+        "schema_row_start": 31,
+        "encodings": {
+            "1": "UK",
+            "2": "Germany",
+            "3": "France",
+            "4": "Other (please specify)"
+        },
+        "related_columns": [
+            "S1"
+        ]
+    },
+    "S1r4oe": {
+        "question_text": "Which geography do you cover? - Other (please specify)",
+        "is_column": true,
+        "is_metadata": false,
+        "schema_row_start": 38,
+        "related_columns": [
+            "S1r4oe"
+        ]
+    },
+    "S1_term:": {
+        "question_text": "S0 TERMINATE",
+        "is_column": false,
+        "is_metadata": false,
+        "schema_row_start": 41,
+        "encodings": {
+            "0": "Unchecked",
+            "1": "Checked"
+        },
+        "related_columns": [
+            "[S1_termr1]",
+            "[S1_termnone]"
+        ],
+        "rows": {
+            "[S1_termr1]": {
+                "row_number": "1]",
+                "row_text": "Other"
+            },
+            "[S1_termnone]": {
+                "row_number": "mnone]",
+                "row_text": "None of These Classifications Apply"
+            }
+        }
+    },
+    "S2": {
+        "question_text": "What segment do you work in?",
+        "is_column": true,
+        "is_metadata": false,
+        "schema_row_start": 48,
+        "encodings": {
+            "1": "Healthcare",
+            "2": "Education",
+            "3": "Commercial",
+            "4": "Industrial",
+            "5": "Construction",
+            "6": "Other (please specify)"
+        },
+        "related_columns": [
+            "S2"
+        ]
+    },
+    "S2r6oe": {
+        "question_text": "What segment do you work in? - Other (please specify)",
+        "is_column": true,
+        "is_metadata": false,
+        "schema_row_start": 57,
+        "related_columns": [
+            "S2r6oe"
+        ]
+    },
+    "S2_term:": {
+        "question_text": "S2 TERMINATE",
+        "is_column": false,
+        "is_metadata": false,
+        "schema_row_start": 60,
+        "encodings": {
+            "0": "Unchecked",
+            "1": "Checked"
+        },
+        "related_columns": [
+            "[S2_termr1]",
+            "[S2_termnone]"
+        ],
+        "rows": {
+            "[S2_termr1]": {
+                "row_number": "1]",
+                "row_text": "Other"
+            },
+            "[S2_termnone]": {
+                "row_number": "mnone]",
+                "row_text": "None of These Classifications Apply"
+            }
+        }
+    },
+    "S3_Healthcare:": {
+        "question_text": "Please select the subsectors which apply.",
+        "is_column": false,
+        "is_metadata": false,
+        "schema_row_start": 67,
+        "encodings": {
+            "0": "Unchecked",
+            "1": "Checked"
+        },
+        "related_columns": [
+            "[S3_Healthcarer1]",
+            "[S3_Healthcarer2]",
+            "[S3_Healthcarer3]",
+            "[S3_Healthcarer4]",
+            "[S3_Healthcarer5]"
+        ],
+        "rows": {
+            "[S3_Healthcarer1]": {
+                "row_number": "1]",
+                "row_text": "Hospitals"
+            },
+            "[S3_Healthcarer2]": {
+                "row_number": "2]",
+                "row_text": "Community services"
+            },
+            "[S3_Healthcarer3]": {
+                "row_number": "3]",
+                "row_text": "GPs"
+            },
+            "[S3_Healthcarer4]": {
+                "row_number": "4]",
+                "row_text": "Mental & Disability"
+            },
+            "[S3_Healthcarer5]": {
+                "row_number": "5]",
+                "row_text": "Other"
+            }
+        }
+    },
+    "S3_Education:": {
+        "question_text": "Please select the subsectors which apply.",
+        "is_column": false,
+        "is_metadata": false,
+        "schema_row_start": 77,
+        "encodings": {
+            "0": "Unchecked",
+            "1": "Checked"
+        },
+        "related_columns": [
+            "[S3_Educationr1]",
+            "[S3_Educationr2]",
+            "[S3_Educationr3]",
+            "[S3_Educationr4]",
+            "[S3_Educationr5]"
+        ],
+        "rows": {
+            "[S3_Educationr1]": {
+                "row_number": "1]",
+                "row_text": "Pre-schools/kindergarten"
+            },
+            "[S3_Educationr2]": {
+                "row_number": "2]",
+                "row_text": "Primary Schools"
+            },
+            "[S3_Educationr3]": {
+                "row_number": "3]",
+                "row_text": "Secondary schools"
+            },
+            "[S3_Educationr4]": {
+                "row_number": "4]",
+                "row_text": "Colleges and Universities"
+            },
+            "[S3_Educationr5]": {
+                "row_number": "5]",
+                "row_text": "Other"
+            }
+        }
+    },
+    "S3_Commercial:": {
+        "question_text": "Please select the subsectors which apply.",
+        "is_column": false,
+        "is_metadata": false,
+        "schema_row_start": 87,
+        "encodings": {
+            "0": "Unchecked",
+            "1": "Checked"
+        },
+        "related_columns": [
+            "[S3_Commercialr1]",
+            "[S3_Commercialr2]",
+            "[S3_Commercialr3]",
+            "[S3_Commercialr4]",
+            "[S3_Commercialr5]"
+        ],
+        "rows": {
+            "[S3_Commercialr1]": {
+                "row_number": "1]",
+                "row_text": "Professional and financial services (banking, insurance, IT, etc)"
+            },
+            "[S3_Commercialr2]": {
+                "row_number": "2]",
+                "row_text": "Life sciences"
+            },
+            "[S3_Commercialr3]": {
+                "row_number": "3]",
+                "row_text": "Retail and hospitality (e.g., shops, restaurants)"
+            },
+            "[S3_Commercialr4]": {
+                "row_number": "4]",
+                "row_text": "leisure (e.g., sports facilities)"
+            },
+            "[S3_Commercialr5]": {
+                "row_number": "5]",
+                "row_text": "Other"
+            }
+        }
+    },
+    "S3_Industrial:": {
+        "question_text": "Please select the subsectors which apply.",
+        "is_column": false,
+        "is_metadata": false,
+        "schema_row_start": 97,
+        "encodings": {
+            "0": "Unchecked",
+            "1": "Checked"
+        },
+        "related_columns": [
+            "[S3_Industrialr1]",
+            "[S3_Industrialr2]",
+            "[S3_Industrialr3]",
+            "[S3_Industrialr4]",
+            "[S3_Industrialr5]",
+            "[S3_Industrialr6]",
+            "[S3_Industrialr7]"
+        ],
+        "rows": {
+            "[S3_Industrialr1]": {
+                "row_number": "1]",
+                "row_text": "Manufacturing (including offices and warehousing connected to manufacturing)"
+            },
+            "[S3_Industrialr2]": {
+                "row_number": "2]",
+                "row_text": "Transportation and logistics (including offices and warehousing connected to transport and logistics)"
+            },
+            "[S3_Industrialr3]": {
+                "row_number": "3]",
+                "row_text": "Defense"
+            },
+            "[S3_Industrialr4]": {
+                "row_number": "4]",
+                "row_text": "Agriculture"
+            },
+            "[S3_Industrialr5]": {
+                "row_number": "5]",
+                "row_text": "Utilities (energy, water, telecoms, waste, etc)"
+            },
+            "[S3_Industrialr6]": {
+                "row_number": "6]",
+                "row_text": "Other social infrastructure (police stations, prisons, public administration, etc.)"
+            },
+            "[S3_Industrialr7]": {
+                "row_number": "7]",
+                "row_text": "Other"
+            }
+        }
+    },
+    "S3_autofill:": {
+        "question_text": "S3_autofill",
+        "is_column": false,
+        "is_metadata": false,
+        "schema_row_start": 109,
+        "encodings": {
+            "0": "Unchecked",
+            "1": "Checked"
+        },
+        "related_columns": [
+            "[S3_autofillr1]",
+            "[S3_autofillr2]"
+        ],
+        "rows": {
+            "[S3_autofillr1]": {
+                "row_number": "1]",
+                "row_text": "GBP"
+            },
+            "[S3_autofillr2]": {
+                "row_number": "2]",
+                "row_text": "EUR"
+            }
+        }
+    },
+    "S4": {
+        "question_text": "Have you procured volumetric modular solutions to rent in the past 3 years? - By modular we mean volumetric modular. This can be both relocatable cabin type structures for temporary and permanent, as well as non-relocatable volumetric units for permanent applications, which are prefabricated off-site.- We specifically exclude high-rise permanent modular buildings, 2D panel based systems and bespoke off-site fabricated systemsExample pictures of modular solutions and which isn't modular: [Picture9_900x900.png]",
+        "is_column": true,
+        "is_metadata": false,
+        "schema_row_start": 117,
+        "encodings": {
+            "1": "Yes, I've procured them before to rent",
+            "2": "No I have not procured them before to rent",
+            "3": "I've heard of them but don't know much",
+            "4": "Never heard of them"
+        },
+        "related_columns": [
+            "S4"
+        ]
+    },
+    "S4_term:": {
+        "question_text": "S4 TERMINATE",
+        "is_column": false,
+        "is_metadata": false,
+        "schema_row_start": 124,
+        "encodings": {
+            "0": "Unchecked",
+            "1": "Checked"
+        },
+        "related_columns": [
+            "[S4_termr1]",
+            "[S4_termr2]",
+            "[S4_termnone]"
+        ],
+        "rows": {
+            "[S4_termr1]": {
+                "row_number": "1]",
+                "row_text": "I've heard of them but don't know much"
+            },
+            "[S4_termr2]": {
+                "row_number": "2]",
+                "row_text": "Never heard of them"
+            },
+            "[S4_termnone]": {
+                "row_number": "mnone]",
+                "row_text": "None of These Classifications Apply"
+            }
+        }
+    },
+    "S5": {
+        "question_text": "What volumetric modular building suppliers/providers are you aware of? - By modular we mean volumetric modular. This can be both relocatable cabin type structures for temporary and permanent, as well as non-relocatable volumetric units for permanent applications, which are prefabricated off-site.- We specifically exclude high-rise permanent modular buildings, 2D panel based systems and bespoke off-site fabricated systemsExample pictures of modular solutions and which isn't modular:[MicrosoftTeams-image_50.png]",
+        "is_column": true,
+        "is_metadata": false,
+        "schema_row_start": 132,
+        "related_columns": [
+            "S5"
+        ]
+    },
+    "S6": {
+        "question_text": "Have you run a competitive process, in which you evaluated Portakabin\u2019s rental offer in depth against competitors?",
+        "is_column": true,
+        "is_metadata": false,
+        "schema_row_start": 135,
+        "encodings": {
+            "1": "Yes",
+            "2": "No"
+        },
+        "related_columns": [
+            "S6"
+        ]
+    },
+    "S6_term:": {
+        "question_text": "S6 TERMINATE",
+        "is_column": false,
+        "is_metadata": false,
+        "schema_row_start": 140,
+        "encodings": {
+            "0": "Unchecked",
+            "1": "Checked"
+        },
+        "related_columns": [
+            "[S6_termr1]",
+            "[S6_termnone]"
+        ],
+        "rows": {
+            "[S6_termr1]": {
+                "row_number": "1]",
+                "row_text": "No"
+            },
+            "[S6_termnone]": {
+                "row_number": "mnone]",
+                "row_text": "None of These Classifications Apply"
+            }
+        }
+    },
+    "Q1": {
+        "question_text": "What was the duration of the rental?",
+        "is_column": true,
+        "is_metadata": false,
+        "schema_row_start": 147,
+        "encodings": {
+            "1": "Less than 6 months",
+            "2": "6 to 12 months",
+            "3": "1 to 2 years",
+            "4": "2 to 5 years",
+            "5": "More than 5 years"
+        },
+        "related_columns": [
+            "Q1"
+        ]
+    },
+    "Q2:": {
+        "question_text": "What is your rental experience with each of the following providers of volumetric modular building solutions?",
+        "is_column": false,
+        "is_metadata": false,
+        "schema_row_start": 155,
+        "encodings": {
+            "1": "Not aware",
+            "2": "Aware, but have not considered",
+            "3": "Have considered, but not used in the past 3 years",
+            "4": "Have used in the past 3 years",
+            "5": "Have used, and this is my preferred supplier"
+        },
+        "related_columns": [
+            "[Q2r1]",
+            "[Q2r2]",
+            "[Q2r3]",
+            "[Q2r4]",
+            "[Q2r5]",
+            "[Q2r6]",
+            "[Q2r7]",
+            "[Q2r8]",
+            "[Q2r9]",
+            "[Q2r10]",
+            "[Q2r11]"
+        ],
+        "rows": {
+            "[Q2r1]": {
+                "row_number": "1]",
+                "row_text": "Algeco"
+            },
+            "[Q2r2]": {
+                "row_number": "2]",
+                "row_text": "Portakabin"
+            },
+            "[Q2r3]": {
+                "row_number": "3]",
+                "row_text": "Premier Modular"
+            },
+            "[Q2r4]": {
+                "row_number": "4]",
+                "row_text": "Wernick"
+            },
+            "[Q2r5]": {
+                "row_number": "5]",
+                "row_text": "FAGSI"
+            },
+            "[Q2r6]": {
+                "row_number": "6]",
+                "row_text": "ALHO"
+            },
+            "[Q2r7]": {
+                "row_number": "7]",
+                "row_text": "Kleusberg"
+            },
+            "[Q2r8]": {
+                "row_number": "8]",
+                "row_text": "ELA"
+            },
+            "[Q2r9]": {
+                "row_number": "9]",
+                "row_text": "GSCM"
+            },
+            "[Q2r10]": {
+                "row_number": "10]",
+                "row_text": "Cougnaud"
+            },
+            "[Q2r11]": {
+                "row_number": "11]",
+                "row_text": "Other (please specify)"
+            }
+        }
+    },
+    "Q2r11oe": {
+        "question_text": "What is your rental experience with each of the following providers of volumetric modular building solutions? - Other (please specify)",
+        "is_column": true,
+        "is_metadata": false,
+        "schema_row_start": 174,
+        "related_columns": [
+            "Q2r11oe"
+        ]
+    },
+    "Q3:": {
+        "question_text": "On a scale of 0 to 10, how likely are you to recommend each provider to a friend or colleague?",
+        "is_column": false,
+        "is_metadata": false,
+        "schema_row_start": 177,
+        "encodings": {
+            "0": "0 - Not at all Likely",
+            "1": "1",
+            "2": "2",
+            "3": "3",
+            "4": "4",
+            "5": "5",
+            "6": "6",
+            "7": "7",
+            "8": "8",
+            "9": "9",
+            "10": "10 - Extremely Likely"
+        },
+        "related_columns": [
+            "[Q3r1]",
+            "[Q3r2]",
+            "[Q3r3]",
+            "[Q3r4]",
+            "[Q3r5]",
+            "[Q3r6]",
+            "[Q3r7]",
+            "[Q3r8]",
+            "[Q3r9]",
+            "[Q3r10]",
+            "[Q3r11]",
+            "[Q3r12]"
+        ],
+        "rows": {
+            "[Q3r1]": {
+                "row_number": "1]",
+                "row_text": "Algeco"
+            },
+            "[Q3r2]": {
+                "row_number": "2]",
+                "row_text": "Portakabin"
+            },
+            "[Q3r3]": {
+                "row_number": "3]",
+                "row_text": "Premier Modular"
+            },
+            "[Q3r4]": {
+                "row_number": "4]",
+                "row_text": "Wernick"
+            },
+            "[Q3r5]": {
+                "row_number": "5]",
+                "row_text": "FAGSI"
+            },
+            "[Q3r6]": {
+                "row_number": "6]",
+                "row_text": "ALHO"
+            },
+            "[Q3r7]": {
+                "row_number": "7]",
+                "row_text": "Kleusberg"
+            },
+            "[Q3r8]": {
+                "row_number": "8]",
+                "row_text": "ELA"
+            },
+            "[Q3r9]": {
+                "row_number": "9]",
+                "row_text": "GSCM"
+            },
+            "[Q3r10]": {
+                "row_number": "10]",
+                "row_text": "Cougnaud"
+            },
+            "[Q3r11]": {
+                "row_number": "11]",
+                "row_text": "$ {Q2.r11.open}"
+            },
+            "[Q3r12]": {
+                "row_number": "12]",
+                "row_text": "Other (Please specify)"
+            }
+        }
+    },
+    "Q3r12oe": {
+        "question_text": "On a scale of 0 to 10, how likely are you to recommend each provider to a friend or colleague? - Other (Please specify)",
+        "is_column": true,
+        "is_metadata": false,
+        "schema_row_start": 203,
+        "related_columns": [
+            "Q3r12oe"
+        ]
+    },
+    "Q4:": {
+        "question_text": "Please rank the below from most important to least important , when procuring rental space:",
+        "is_column": false,
+        "is_metadata": false,
+        "schema_row_start": 206,
+        "encodings": {
+            "1": "Most Important",
+            "2": "\u2193",
+            "3": "\u2193",
+            "4": "\u2193",
+            "5": "\u2193",
+            "6": "\u2193",
+            "7": "\u2193",
+            "8": "\u2193",
+            "9": "\u2193",
+            "10": "\u2193",
+            "11": "\u2193",
+            "12": "Least Important"
+        },
+        "related_columns": [
+            "[Q4r1]",
+            "[Q4r2]",
+            "[Q4r3]",
+            "[Q4r4]",
+            "[Q4r5]",
+            "[Q4r6]",
+            "[Q4r7]",
+            "[Q4r8]",
+            "[Q4r9]",
+            "[Q4r10]",
+            "[Q4r11]",
+            "[Q4r12]"
+        ],
+        "rows": {
+            "[Q4r1]": {
+                "row_number": "1]",
+                "row_text": "Availability/Short lead times"
+            },
+            "[Q4r2]": {
+                "row_number": "2]",
+                "row_text": "Modular building quality (e.g., durability, aesthetics, specifications)"
+            },
+            "[Q4r3]": {
+                "row_number": "3]",
+                "row_text": "Variety of offering (e.g., range of cabin types to match requirements)"
+            },
+            "[Q4r4]": {
+                "row_number": "4]",
+                "row_text": "Compliance with regulation (e.g., fire standards, insulation, ESG)"
+            },
+            "[Q4r5]": {
+                "row_number": "5]",
+                "row_text": "Strength of relationship"
+            },
+            "[Q4r6]": {
+                "row_number": "6]",
+                "row_text": "Price"
+            },
+            "[Q4r7]": {
+                "row_number": "7]",
+                "row_text": "Value for money"
+            },
+            "[Q4r8]": {
+                "row_number": "8]",
+                "row_text": "Value added products and services (e.g., air conditioning, security, insurance)"
+            },
+            "[Q4r9]": {
+                "row_number": "9]",
+                "row_text": "Full end-to-end delivery capabilities (e.g., design, groundwork, installation)"
+            },
+            "[Q4r10]": {
+                "row_number": "10]",
+                "row_text": "Brand reputation/track record"
+            },
+            "[Q4r11]": {
+                "row_number": "11]",
+                "row_text": "Speed and reliability of installation/delivery"
+            },
+            "[Q4r12]": {
+                "row_number": "12]",
+                "row_text": "Depth of expertise (technical and/or sales expertise)"
+            }
+        }
+    },
+    "Q5:": {
+        "question_text": "Against each of these, please rank Portakabin versus competitor solutions.",
+        "is_column": false,
+        "is_metadata": false,
+        "schema_row_start": 233,
+        "encodings": {
+            "1": "Best-in-class",
+            "2": "Better than market",
+            "3": "Average",
+            "4": "Behind market",
+            "5": "Worst-in-class"
+        },
+        "related_columns": [
+            "[Q5r1]",
+            "[Q5r2]",
+            "[Q5r3]",
+            "[Q5r4]",
+            "[Q5r5]",
+            "[Q5r6]",
+            "[Q5r7]",
+            "[Q5r8]",
+            "[Q5r9]",
+            "[Q5r10]",
+            "[Q5r11]",
+            "[Q5r12]"
+        ],
+        "rows": {
+            "[Q5r1]": {
+                "row_number": "1]",
+                "row_text": "Availability/Short lead times"
+            },
+            "[Q5r2]": {
+                "row_number": "2]",
+                "row_text": "Modular building quality (e.g., durability, aesthetics, specifications)"
+            },
+            "[Q5r3]": {
+                "row_number": "3]",
+                "row_text": "Variety of offering (e.g., range of cabin types to match requirements)"
+            },
+            "[Q5r4]": {
+                "row_number": "4]",
+                "row_text": "Compliance with regulation (e.g., fire standards, insulation, ESG)"
+            },
+            "[Q5r5]": {
+                "row_number": "5]",
+                "row_text": "Strength of relationship"
+            },
+            "[Q5r6]": {
+                "row_number": "6]",
+                "row_text": "Price"
+            },
+            "[Q5r7]": {
+                "row_number": "7]",
+                "row_text": "Value for money"
+            },
+            "[Q5r8]": {
+                "row_number": "8]",
+                "row_text": "Value added products and services (e.g., air conditioning, security, insurance)"
+            },
+            "[Q5r9]": {
+                "row_number": "9]",
+                "row_text": "Full end-to-end delivery capabilities (e.g., design, groundwork, installation)"
+            },
+            "[Q5r10]": {
+                "row_number": "10]",
+                "row_text": "Brand reputation/track record"
+            },
+            "[Q5r11]": {
+                "row_number": "11]",
+                "row_text": "Speed and reliability of installation/delivery"
+            },
+            "[Q5r12]": {
+                "row_number": "12]",
+                "row_text": "Depth of expertise (technical and/or sales expertise)"
+            }
+        }
+    },
+    "Q5a": {
+        "question_text": "Please give an approximate comparison (in %) of PK prices vs. competitors.",
+        "is_column": true,
+        "is_metadata": false,
+        "schema_row_start": 253,
+        "encodings": {
+            "1": "Same price",
+            "2": "+0-5%",
+            "3": "+5-10%",
+            "4": "+10-20%",
+            "5": "+20%+",
+            "6": "-0-5%",
+            "7": "-5-10%",
+            "8": "-10-20%",
+            "9": "-20%+"
+        },
+        "related_columns": [
+            "Q5a"
+        ]
+    },
+    "Q5b_1": {
+        "question_text": "You mentioned Porktabin was as compared to it's competitors considering building quality. Please explain.",
+        "is_column": true,
+        "is_metadata": false,
+        "schema_row_start": 265,
+        "related_columns": [
+            "Q5b_1"
+        ]
+    },
+    "Q5b_2": {
+        "question_text": "You mentioned Porktabin was as compared to it's competitors considering value for money. Please explain.",
+        "is_column": true,
+        "is_metadata": false,
+        "schema_row_start": 268,
+        "related_columns": [
+            "Q5b_2"
+        ]
+    },
+    "Q5b_3": {
+        "question_text": "You mentioned Porktabin was as compared to it's competitors considering depth of expertise. Please explain.",
+        "is_column": true,
+        "is_metadata": false,
+        "schema_row_start": 271,
+        "related_columns": [
+            "Q5b_3"
+        ]
+    },
+    "Q6:": {
+        "question_text": "Please rank in order, the top 3 volumetric modular providers based on your requirements:",
+        "is_column": false,
+        "is_metadata": false,
+        "schema_row_start": 274,
+        "encodings": {
+            "1": "Rank 1",
+            "2": "Rank 2",
+            "3": "Rank 3"
+        },
+        "related_columns": [
+            "[Q6r1c1]",
+            "[Q6r2c1]",
+            "[Q6r3c1]"
+        ],
+        "rows": {
+            "[Q6r1c1]": {
+                "row_number": "1c1]",
+                "row_text": "Modular provider 1"
+            },
+            "[Q6r2c1]": {
+                "row_number": "2c1]",
+                "row_text": "Modular provider 2"
+            },
+            "[Q6r3c1]": {
+                "row_number": "3c1]",
+                "row_text": "Modular provider 3"
+            }
+        }
+    },
+    "Q6oe:": {
+        "question_text": "Please rank in order, the top 3 volumetric modular providers based on your requirements:",
+        "is_column": false,
+        "is_metadata": false,
+        "schema_row_start": 283,
+        "related_columns": [
+            "[Q6r1c1]",
+            "[Q6r2c1]",
+            "[Q6r3c1]"
+        ],
+        "rows": {
+            "[Q6r1c1]": {
+                "row_number": "1c1]",
+                "row_text": "Modular provider 1"
+            },
+            "[Q6r2c1]": {
+                "row_number": "2c1]",
+                "row_text": "Modular provider 2"
+            },
+            "[Q6r3c1]": {
+                "row_number": "3c1]",
+                "row_text": "Modular provider 3"
+            }
+        }
+    },
+    "Q6_Other": {
+        "question_text": "Rationale for your ranking",
+        "is_column": true,
+        "is_metadata": false,
+        "schema_row_start": 289,
+        "related_columns": [
+            "Q6_Other"
+        ]
+    },
+    "vlist": {
+        "question_text": "Participant source",
+        "is_column": true,
+        "is_metadata": true,
+        "schema_row_start": 292,
+        "encodings": {
+            "1": "Atheneum Panel (list=0)",
+            "2": "Atheneum Custom Sample1 (list=1)"
+        },
+        "related_columns": [
+            "vlist"
+        ]
+    },
+    "qtime": {
+        "question_text": "Total Interview Time",
+        "is_column": true,
+        "is_metadata": true,
+        "schema_row_start": 297,
+        "related_columns": [
+            "qtime"
+        ]
+    },
+    "vdecLang": {
+        "question_text": "language tracker",
+        "is_column": true,
+        "is_metadata": true,
+        "schema_row_start": 300,
+        "encodings": {
+            "1": "English (USA)",
+            "2": "German",
+            "3": "French"
+        },
+        "related_columns": [
+            "vdecLang"
+        ]
+    },
+    "vos": {
+        "question_text": "Operating System",
+        "is_column": true,
+        "is_metadata": true,
+        "schema_row_start": 306,
+        "encodings": {
+            "1": "Windows 95",
+            "2": "Windows 98",
+            "3": "Windows 8",
+            "4": "Windows 10",
+            "5": "Windows 7",
+            "6": "Windows Vista",
+            "7": "Windows 2003",
+            "8": "Windows XP",
+            "9": "Windows 2000",
+            "10": "Microsoft Windows NT 4.0",
+            "11": "Windows ME",
+            "12": "iPhone/iPad",
+            "13": "Mac OS X or older",
+            "14": "Other Mobile",
+            "15": "Linux, UNIX",
+            "16": "Other"
+        },
+        "related_columns": [
+            "vos"
+        ]
+    },
+    "vosr15oe": {
+        "question_text": "Operating System - Other",
+        "is_column": true,
+        "is_metadata": true,
+        "schema_row_start": 325,
+        "related_columns": [
+            "vosr15oe"
+        ]
+    },
+    "vbrowser": {
+        "question_text": "Browser",
+        "is_column": true,
+        "is_metadata": true,
+        "schema_row_start": 328,
+        "encodings": {
+            "1": "Opera",
+            "2": "MS Edge",
+            "3": "MSIE 11",
+            "4": "MSIE 10.x",
+            "5": "MSIE 9.x",
+            "6": "MSIE 8.x",
+            "7": "MSIE 7.x",
+            "8": "MSIE 6.x",
+            "9": "MSIE 5.x or older",
+            "10": "Chrome",
+            "11": "Safari",
+            "12": "Firefox",
+            "13": "Other Mozilla or Netscape",
+            "14": "Mobile",
+            "15": "Text Browser",
+            "16": "Other"
+        },
+        "related_columns": [
+            "vbrowser"
+        ]
+    },
+    "vbrowserr15oe": {
+        "question_text": "Browser - Other",
+        "is_column": true,
+        "is_metadata": true,
+        "schema_row_start": 347,
+        "related_columns": [
+            "vbrowserr15oe"
+        ]
+    },
+    "vmobiledevice": {
+        "question_text": "Mobile device category",
+        "is_column": true,
+        "is_metadata": true,
+        "schema_row_start": 350,
+        "encodings": {
+            "1": "Smartphone",
+            "2": "Featurephone",
+            "3": "Tablet",
+            "4": "Other mobile",
+            "5": "Desktop"
+        },
+        "related_columns": [
+            "vmobiledevice"
+        ]
+    },
+    "vmobileos": {
+        "question_text": "Mobile OS",
+        "is_column": true,
+        "is_metadata": true,
+        "schema_row_start": 358,
+        "encodings": {
+            "1": "iOS",
+            "2": "Android",
+            "3": "Symbian",
+            "4": "Windows Phone",
+            "5": "Blackberry",
+            "6": "Other/Desktop"
+        },
+        "related_columns": [
+            "vmobileos"
+        ]
+    },
+    "start_date": {
+        "question_text": "Survey start time",
+        "is_column": true,
+        "is_metadata": true,
+        "schema_row_start": 367,
+        "related_columns": [
+            "start_date"
+        ]
+    },
+    "vdropout": {
+        "question_text": "Last seen question",
+        "is_column": true,
+        "is_metadata": true,
+        "schema_row_start": 370,
+        "encodings": {
+            "1": "(Q0) Please choose your language preference:",
+            "2": "(S1) Which geography do you cover?",
+            "3": "(S2) What segment do you work in?",
+            "4": "(S3_Healthcare) Please select the subsectors which apply.",
+            "5": "(S3_Education) Please select the subsectors which apply.",
+            "6": "(S3_Commercial) Please select the subsectors which apply.",
+            "7": "(S3_Industrial) Please select the subsectors which apply.",
+            "8": "(S4) Have you procured volumetric modular solutions to rent in the past 3 years? - By modular we mean volumetric modular. This can be both relocatable cabin type structures for temporary and permanent, as well as non-relocatable volumetric units for permanent applications, which are prefabricated off-site.- We specifically exclude high-rise permanent modular buildings, 2D panel based systems and bespoke off-site fabricated systemsExample pictures of modular solutions and which isn't modular: [Picture9_900x900.png]",
+            "9": "(S5) What volumetric modular building suppliers/providers are you aware of? - By modular we mean volumetric modular. This can be both relocatable cabin type structures for temporary and permanent, as well as non-relocatable volumetric units for permanent applications, which are prefabricated off-site.- We specifically exclude high-rise permanent modular buildings, 2D panel based systems and bespoke off-site fabricated systemsExample pictures of modular solutions and which isn't modular:[MicrosoftTeams-image_50.png]",
+            "10": "(S6) Have you run a competitive process, in which you evaluated Portakabin\u2019s rental offer in depth against competitors?",
+            "11": "(Q1) What was the duration of the rental?",
+            "12": "(Q2) What is your rental experience with each of the following providers of volumetric modular building solutions?",
+            "13": "(Q3) On a scale of 0 to 10, how likely are you to recommend each provider to a friend or colleague?",
+            "14": "(Q4) Please rank the below from most important to least important , when procuring rental space:",
+            "15": "(Q5) Against each of these, please rank Portakabin versus competitor solutions.",
+            "16": "(Q5a) Please give an approximate comparison (in %) of PK prices vs. competitors.",
+            "17": "(Q5b_1,Q5b_2,Q5b_3) You mentioned Porktabin was $ {p.rp} as compared to it's competitors considering building quality. Please explain.",
+            "18": "(Q6,Q6_Other) Please rank in order, the top 3 volumetric modular providers based on your requirements:"
+        },
+        "related_columns": [
+            "vdropout"
+        ]
+    },
+    "ipAddress": {
+        "question_text": "Captured variable",
+        "is_column": true,
+        "is_metadata": true,
+        "schema_row_start": 391,
+        "related_columns": [
+            "ipAddress"
+        ]
+    },
+    "source": {
+        "question_text": "Captured variable",
+        "is_column": true,
+        "is_metadata": true,
+        "schema_row_start": 394,
+        "related_columns": [
+            "source"
+        ]
+    },
+    "decLang": {
+        "question_text": "Captured variable",
+        "is_column": true,
+        "is_metadata": true,
+        "schema_row_start": 397,
+        "related_columns": [
+            "decLang"
+        ]
+    },
+    "list": {
+        "question_text": "Captured variable",
+        "is_column": true,
+        "is_metadata": true,
+        "schema_row_start": 400,
+        "related_columns": [
+            "list"
+        ]
+    },
+    "userAgent": {
+        "question_text": "Captured variable",
+        "is_column": true,
+        "is_metadata": true,
+        "schema_row_start": 403,
+        "related_columns": [
+            "userAgent"
+        ]
+    },
+    "fp_etag": {
+        "question_text": "Captured variable",
+        "is_column": true,
+        "is_metadata": true,
+        "schema_row_start": 406,
+        "related_columns": [
+            "fp_etag"
+        ]
+    },
+    "fp_html5": {
+        "question_text": "Captured variable",
+        "is_column": true,
+        "is_metadata": true,
+        "schema_row_start": 409,
+        "related_columns": [
+            "fp_html5"
+        ]
+    },
+    "fp_flash": {
+        "question_text": "Captured variable",
+        "is_column": true,
+        "is_metadata": true,
+        "schema_row_start": 412,
+        "related_columns": [
+            "fp_flash"
+        ]
+    },
+    "fp_browser": {
+        "question_text": "Captured variable",
+        "is_column": true,
+        "is_metadata": true,
+        "schema_row_start": 415,
+        "related_columns": [
+            "fp_browser"
+        ]
+    },
+    "dcua": {
+        "question_text": "Captured variable",
+        "is_column": true,
+        "is_metadata": true,
+        "schema_row_start": 418,
+        "related_columns": [
+            "dcua"
+        ]
+    },
+    "url": {
+        "question_text": "Captured variable",
+        "is_column": true,
+        "is_metadata": true,
+        "schema_row_start": 421,
+        "related_columns": [
+            "url"
+        ]
+    },
+    "session": {
+        "question_text": "Captured variable",
+        "is_column": true,
+        "is_metadata": true,
+        "schema_row_start": 424,
+        "related_columns": [
+            "session"
+        ]
+    },
+    "UID": {
+        "question_text": "Captured variable",
+        "is_column": true,
+        "is_metadata": true,
+        "schema_row_start": 427,
+        "related_columns": [
+            "UID"
+        ]
+    },
+    "RID": {
+        "question_text": "Captured variable",
+        "is_column": true,
+        "is_metadata": true,
+        "schema_row_start": 430,
+        "related_columns": [
+            "RID"
+        ]
+    }
+}

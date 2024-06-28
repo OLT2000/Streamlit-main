@@ -29,6 +29,7 @@ class Variable:
     def __init__(self, variable_id: str, variable_metadata: dict) -> None:
         self.variable_id = variable_id
         self.question_text = variable_metadata["question_text"]
+        print(variable_metadata["related_columns"], variable_metadata["related_columns"])
         self.columns = variable_metadata["related_columns"]
         self.is_column = variable_metadata["is_column"]
         self.encodings = variable_metadata.get("encodings")
@@ -75,10 +76,10 @@ EXCEL_EXTENSIONS = {".csv", ".xlsx", ".xls", ".xlsb", "ods", "xlsm", "xltx", "xl
 def load_data(uploaded_data_file, **kwargs):
     try:
         if uploaded_data_file.name.endswith(".csv"):
-            data = pd.read_csv(uploaded_data_file, **kwargs).astype(str)
+            data = pd.read_csv(uploaded_data_file, **kwargs).fillna("").astype(str)
 
         elif uploaded_data_file.name.endswith(tuple(EXCEL_EXTENSIONS - {".csv"})):
-            data = pd.read_excel(uploaded_data_file, sheet_name=0).astype(str)
+            data = pd.read_excel(uploaded_data_file, sheet_name=0).fillna("").astype(str)
 
     # except UnicodeDecodeError:
     #     return load_data(uploaded_data_file=uploaded_data_file, encoding="cp1252")
@@ -105,8 +106,12 @@ def load_schema(schema_file):
     
 
 def on_change_independent_var():
+    # BUG: If I remove the independent variable and then 
     if st.session_state.independent_dd == st.session_state.dependent_dd:
         st.session_state.pop("dependent_dd")
+
+    # elif st.session_state.independent_dd is None:
+    #     st.session_state.pop("dependent_dd")
 
     else:
         st.session_state.dependent_dd = st.session_state.dependent_dd
@@ -139,7 +144,6 @@ if data_file is not None:
 
         schema = process_atheneum_schema(data_file)
         reverse_key_map_no_metadata = {value["question_text"]: key for key, value in schema.items() if not value["is_metadata"]}
-        print(reverse_key_map_no_metadata)
 
         # field_text_to_key = {}
         # for key, value in schema.items():
@@ -241,7 +245,7 @@ if st.session_state.file_uploaded:
             "Select an Optional Dependent Variable",
             options=[c for c in st.session_state.dropdown_selections.keys() if c != st.session_state.independent_dd],
             index=None,
-            key="dependent_dd"
+            key="dependent_dd",
         )
 
         # st.selectbox(
@@ -286,6 +290,8 @@ if st.session_state.file_uploaded:
         st.subheader("Results")
         if st.session_state.independent_dd: # and st.session_state.filter_multi_select != []:
             df = load_data(data_file)
+            print(df.columns)
+
             # count_df = df[st.session_state.independent_dd].value_counts().reset_index()
             # TODO: Turn into a class so we can feed one variable to the function
             independent_id = st.session_state.dropdown_selections[st.session_state.independent_dd]
@@ -293,11 +299,13 @@ if st.session_state.file_uploaded:
                 variable_id=independent_id,
                 variable_metadata=st.session_state.question_schema[independent_id]
             )
+
             # independent_table_key = 
             # independent_table = 
             # independent_variable = independent_table["related_columns"][0]
             # independent_mappings = independent_table["encodings"]
 
+            # TODO: Move the variable assignment to the dropdowns column, so the warning locations are better.
             if st.session_state.dependent_dd:
                 dependent_id = st.session_state.dropdown_selections[st.session_state.dependent_dd]
                 dependent_var = Variable(
@@ -307,6 +315,12 @@ if st.session_state.file_uploaded:
             
             else:
                 dependent_var = None
+
+            if not independent_var.is_column:
+                if dependent_var:
+                    st.warning("Independent Variable is a Multi-Select Question. Dependent Variable will be ignored.")
+
+
             #     dep_table_key = 
             #     dep_table = st.session_state.question_schema[dep_table_key]
             #     dep_variable = dep_table["related_columns"][0]
@@ -323,6 +337,7 @@ if st.session_state.file_uploaded:
             #     barmode="stack",
             #     mappings=independent_mappings
             # )
+
 
             fig, sub_df = create_bar_plot(
                 df=df,
