@@ -79,7 +79,17 @@ def load_data(uploaded_data_file, **kwargs):
             data = pd.read_csv(uploaded_data_file, **kwargs).fillna("").astype(str)
 
         elif uploaded_data_file.name.endswith(tuple(EXCEL_EXTENSIONS - {".csv"})):
-            data = pd.read_excel(uploaded_data_file, sheet_name=0).fillna("").astype(str)
+            data = pd.read_excel(uploaded_data_file, sheet_name=0)#.astype(str)
+
+            for col in data.columns:
+                if data[col].dropna().apply(lambda x: pd.api.types.is_float(x) and float.is_integer(x)).all():
+                    data[col] = data[col].astype(pd.Int16Dtype())
+
+            data = data.astype(str)
+
+            # for col in data.columns:
+            #     if data[col].dropna().apply(lambda x: pd.api.types.is_integer(x)).all():
+            #         print(col)
 
     # except UnicodeDecodeError:
     #     return load_data(uploaded_data_file=uploaded_data_file, encoding="cp1252")
@@ -200,7 +210,8 @@ if st.session_state.file_uploaded:
 
         with swap_col:
             data_transpose = st.button(
-                "Swap Variables?"
+                "Swap Variables?",
+                disabled=st.session_state.dependent_dd is None or st.session_state.independent_dd is None
             )
 
         if data_transpose:

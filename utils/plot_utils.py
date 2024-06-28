@@ -127,42 +127,61 @@ def type_helper(variable):
 
 def create_bar_plot(df: pd.DataFrame, ivar, dvar=None):
     if not ivar.is_column:
-        warning(f"Compatibility for multi-select independent variables not yet developed.")
-        df = df.loc[:, ivar.columns]\
-            .melt(var_name='columns', value_name='values')
+        # warning(f"Compatibility for multi-select independent variables not yet developed.")
+
+        df = df.loc[:, ivar.columns].melt(var_name='rows', value_name='values')
+
+        df = df.loc[df["values"].isin(ivar.encodings.keys())]
+        # for value in df["values"].values.unique():
+            # print(value, value in ivar.encodings)
+        # print(df[df["values"].isin(ivar.encodings)].head(25))
+            
+        grouped_df = df.groupby(
+            ["rows", "values"]
+        )\
+        .size()\
+        .reset_index(name="count")\
+        .sort_values(by=["rows", "count"], ascending=[True, False])\
+        .replace({
+            "rows": {key: value["row_text"] for key, value in ivar.rows.items()},
+            # "values": ivar.encodings
+        })
+
+        fig = px.bar(grouped_df, x="rows", y='count', color="values", text='count', color_discrete_sequence=colors)
+        # fig.update_layout(legend_title_text=dvar.question_text)
 
     else:
         assert len(ivar.columns) == 1
         ind_column = ivar.columns[0]
 
-    if not dvar:
-        grouped_df = df[ind_column].value_counts().reset_index()
-        if ivar.encodings:
-            print("Mappings: ", ivar.encodings)
-            grouped_df.replace({ind_column: ivar.encodings}, inplace=True)
-        print("Single Variable\n", grouped_df.head())
-        fig = px.bar(grouped_df, x=ind_column, y='count', text='count', color_discrete_sequence=colors)
-        
-    else:
-        if not dvar.is_column:
-            warning(f"Compatibility for multi-select dependent variables not yet developed.")
-            return None, None
-        
+        if not dvar:
+            grouped_df = df[ind_column].value_counts().reset_index()
+            if ivar.encodings:
+                print("Mappings: ", ivar.encodings)
+                grouped_df.replace({ind_column: ivar.encodings}, inplace=True)
+            print("Single Variable\n", grouped_df.head())
+            fig = px.bar(grouped_df, x=ind_column, y='count', text='count', color_discrete_sequence=colors)
+            
         else:
-            assert len(dvar.columns) == 1
-            dep_column = dvar.columns[0]
-        
-        grouped_df = df.groupby(
-            [ind_column, dep_column]
-        ).size()\
-        .reset_index(name="count")\
-        .sort_values(by=[ind_column, "count"], ascending=[True, False])\
-        .replace({ind_column: ivar.encodings, dep_column: dvar.encodings})
+            if not dvar.is_column:
+                warning(f"Compatibility for multi-select dependent variables not yet developed.")
+                return None, None
+            
+            else:
+                assert len(dvar.columns) == 1
+                dep_column = dvar.columns[0]
+            
+            grouped_df = df.groupby(
+                [ind_column, dep_column]
+            ).size()\
+            .reset_index(name="count")\
+            .sort_values(by=[ind_column, "count"], ascending=[True, False])\
+            .replace({ind_column: ivar.encodings, dep_column: dvar.encodings})
 
-        
-        print("Two Variables\n", grouped_df.head())
-        fig = px.bar(grouped_df, x=ind_column, y='count', color=dep_column, text='count', color_discrete_sequence=colors)
-        fig.update_layout(legend_title_text=dvar.question_text)
+            
+            print("Two Variables\n", grouped_df.head())
+            fig = px.bar(grouped_df, x=ind_column, y='count', color=dep_column, text='count', color_discrete_sequence=colors)
+            fig.update_layout(legend_title_text=dvar.question_text)
 
     fig.update_layout(
         # title='Bar Chart',
