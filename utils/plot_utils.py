@@ -5,6 +5,7 @@ from numpy import unique
 from collections import defaultdict
 from typing import List, Optional, Union, Dict, Any
 from streamlit import warning
+from .variable import Variable
 
 
 def transform_to_pivot(data: pd.DataFrame, primary_col: str, secondary_col: Optional[str] = None) -> pd.DataFrame:
@@ -37,6 +38,12 @@ Bain v2 #e9cd48 #c6aa3c #ac8830 #d9abc7 #b974a1 #963b74 #640a40 #bccabb #82ab9b 
 current_selection = "Bain"
 
 colors = colour_mappings[current_selection]
+
+
+def generate_thinkcell_json(data: pd.DataFrame, ivar, template_path, dvar: Optional[Any] = None):
+    if dvar:
+        pivot_table = data.pivot
+
 
 def df_to_thinkcell_json(data: pd.DataFrame, primary_col: str, template_path: str, secondary_col: Optional[str]) -> str | Dict:
     if secondary_col:
@@ -132,22 +139,86 @@ def create_bar_plot(df: pd.DataFrame, ivar, chart_type, dvar=None):
         df = df.loc[:, ivar.columns].melt(var_name='rows', value_name='values')
 
         df = df.loc[df["values"].isin(ivar.encodings.keys())]
+
+        dvar = Variable(
+            variable_id="values",
+            variable_metadata={
+                "question_text": "values",
+                "related_columns": ["values"],
+                "is_column": True,
+                "encodings": ivar.encodings,
+            }
+        )
+
+        ivar = Variable(
+            variable_id=ivar.variable_id,
+            variable_metadata={
+                "question_text": ivar.question_text,
+                "related_columns": ["rows"],
+                "is_column": True,
+                "encodings": {key: value["row_text"] for key, value in ivar.rows.items()}
+            }
+        )
         # for value in df["values"].values.unique():
             # print(value, value in ivar.encodings)
         # print(df[df["values"].isin(ivar.encodings)].head(25))
             
-        grouped_df = df.groupby(
-            ["rows", "values"]
-        )\
-        .size()\
-        .reset_index(name="count")\
-        .sort_values(by=["rows", "count"], ascending=[True, False])\
-        .replace({
-            "rows": {key: value["row_text"] for key, value in ivar.rows.items()},
-            # "values": ivar.encodings
-        })
+        # grouped_df = df.groupby(
+        #     ["rows", "values"]
+        # )\
+        # .size()\
+        # .reset_index(name="count")\
+        # .sort_values(by=["rows", "count"], ascending=[True, False])\
+        # .replace({
+        #     "rows": {key: value["row_text"] for key, value in ivar.rows.items()},
+        #     # "values": ivar.encodings
+        # })
 
-        grouped_df.info()
+        # grouped_df.info()
+
+        # if chart_type == "100%":
+        #     # Calculate the sum of counts for each "rows" group
+        #     grouped_df['total'] = grouped_df.groupby('rows')['count'].transform('sum')
+
+        #     # Calculate the percentage contribution
+        #     grouped_df['percentage'] = ((grouped_df['count'] / grouped_df['total']) * 100).round(2)
+        #     y_column = "percentage"
+
+        # else:
+        #     y_column = "count"
+
+        # fig = px.bar(grouped_df, x="rows", y=y_column, color="values", text='count', color_discrete_sequence=colors)
+        # # fig.update_layout(legend_title_text=dvar.question_text)
+
+    # else:
+    assert len(ivar.columns) == 1
+    ind_column = ivar.columns[0]
+
+    if not dvar:
+        grouped_df = df[ind_column].value_counts().reset_index()
+        if ivar.encodings:
+            print("Mappings: ", ivar.encodings)
+            grouped_df.replace({ind_column: ivar.encodings}, inplace=True)
+        print("Single Variable\n", grouped_df.head())
+        fig = px.bar(grouped_df, x=ind_column, y='count', text='count', color_discrete_sequence=colors)
+        output_df = grouped_df.loc[:, [ind_column, "count"]]
+        dep_column = None
+
+    else:
+        if not dvar.is_column:
+            warning(f"Compatibility for multi-select dependent variables not yet developed.")
+            return None, None
+        
+        else:
+            assert len(dvar.columns) == 1
+            dep_column = dvar.columns[0]
+        
+        grouped_df = df.groupby(
+            [ind_column, dep_column]
+        ).size()\
+        .reset_index(name="count")\
+        .sort_values(by=[ind_column, "count"], ascending=[True, False])\
+        .replace({ind_column: ivar.encodings, dep_column: dvar.encodings})
 
         if chart_type == "100%":
             # Calculate the sum of counts for each "rows" group
@@ -160,41 +231,11 @@ def create_bar_plot(df: pd.DataFrame, ivar, chart_type, dvar=None):
         else:
             y_column = "count"
 
-        fig = px.bar(grouped_df, x="rows", y=y_column, color="values", text='count', color_discrete_sequence=colors)
-        # fig.update_layout(legend_title_text=dvar.question_text)
+        print("Two Variables\n", grouped_df.head())
+        fig = px.bar(grouped_df, x=ind_column, y=y_column, color=dep_column, text=y_column, color_discrete_sequence=colors)
+        fig.update_layout(legend_title_text=dvar.question_text)
 
-    else:
-        assert len(ivar.columns) == 1
-        ind_column = ivar.columns[0]
-
-        if not dvar:
-            grouped_df = df[ind_column].value_counts().reset_index()
-            if ivar.encodings:
-                print("Mappings: ", ivar.encodings)
-                grouped_df.replace({ind_column: ivar.encodings}, inplace=True)
-            print("Single Variable\n", grouped_df.head())
-            fig = px.bar(grouped_df, x=ind_column, y='count', text='count', color_discrete_sequence=colors)
-            
-        else:
-            if not dvar.is_column:
-                warning(f"Compatibility for multi-select dependent variables not yet developed.")
-                return None, None
-            
-            else:
-                assert len(dvar.columns) == 1
-                dep_column = dvar.columns[0]
-            
-            grouped_df = df.groupby(
-                [ind_column, dep_column]
-            ).size()\
-            .reset_index(name="count")\
-            .sort_values(by=[ind_column, "count"], ascending=[True, False])\
-            .replace({ind_column: ivar.encodings, dep_column: dvar.encodings})
-
-            
-            print("Two Variables\n", grouped_df.head())
-            fig = px.bar(grouped_df, x=ind_column, y='count', color=dep_column, text='count', color_discrete_sequence=colors)
-            fig.update_layout(legend_title_text=dvar.question_text)
+        output_df = grouped_df.loc[:, [ind_column, dep_column, "count"]]
 
     fig.update_layout(
         # title='Bar Chart',
@@ -214,9 +255,8 @@ def create_bar_plot(df: pd.DataFrame, ivar, chart_type, dvar=None):
 
     # fig.update_xaxes(type="category")
     fig.update_traces(textangle=0)
-
-    # print(fig.data)
-    return fig, grouped_df
+    
+    return fig, output_df, ind_column, dep_column
 
 
 def create_bar_chart(df: pd.DataFrame, primary_var, secondary_var, primary_values, barmode, mappings):

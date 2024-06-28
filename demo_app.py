@@ -23,17 +23,9 @@ from utils.llm_utils import (
     retrieve_assistant_created_files
 )
 from utils.thinkcell import call_thinkcell_server
+from utils.variable import Variable
 
 
-class Variable:
-    def __init__(self, variable_id: str, variable_metadata: dict) -> None:
-        self.variable_id = variable_id
-        self.question_text = variable_metadata["question_text"]
-        print(variable_metadata["related_columns"], variable_metadata["related_columns"])
-        self.columns = variable_metadata["related_columns"]
-        self.is_column = variable_metadata["is_column"]
-        self.encodings = variable_metadata.get("encodings")
-        self.rows = variable_metadata.get("rows")
 
 
 # Initialise the OpenAI client, and retrieve the assistant
@@ -355,8 +347,7 @@ if st.session_state.file_uploaded:
             #     mappings=independent_mappings
             # )
 
-
-            fig, sub_df = create_bar_plot(
+            fig, sub_df, ind_col, dep_col = create_bar_plot(
                 df=df,
                 ivar=independent_var,
                 dvar=dependent_var,
@@ -372,65 +363,65 @@ if st.session_state.file_uploaded:
 
             st.plotly_chart(st.session_state.plotly_figure)
 
-    #         tc_json, tc_df = df_to_thinkcell_json(sub_df, independent_variable, st.secrets.get("BARCHART_TEMPLATE"), dep_variable)
+            tc_json, tc_df = df_to_thinkcell_json(sub_df, ind_col, st.secrets.get("BARCHART_TEMPLATE"), dep_col)
             
-    #         if st.checkbox("Display Pivot data?"):
-    #             st.subheader("Pivot Data")
-    #             st.dataframe(tc_df, use_container_width=True, hide_index=False)
+            if st.checkbox("Display Pivot data?"):
+                st.subheader("Pivot Data")
+                st.dataframe(tc_df, use_container_width=True, hide_index=False)
 
-    #     else:
-    #         st.write("Please choose an independent variable to start your analysis.")
+        else:
+            st.write("Please choose an independent variable to start your analysis.")
     
-    # with export_col:
-    #     st.subheader("Exports")
-    #     if st.session_state.independent_dd: # and st.session_state.filter_multi_select != []:
-    #         xl_filename = st.text_input(label="Input a filename for your pivot data.", placeholder="charter_pivot_data.csv")
-    #         if not xl_filename:
-    #             xl_filename = "charter_pivot_data.csv"
+    with export_col:
+        st.subheader("Exports")
+        if st.session_state.independent_dd: # and st.session_state.filter_multi_select != []:
+            xl_filename = st.text_input(label="Input a filename for your pivot data.", placeholder="charter_pivot_data.csv")
+            if not xl_filename:
+                xl_filename = "charter_pivot_data.csv"
 
-    #         st.download_button(
-    #             label="Export Pivot Data",
-    #             file_name=xl_filename,
-    #             mime="text/csv",
-    #             data=tc_df.to_csv(index=True, header=True, encoding="utf-8"),
-    #             disabled=not xl_filename.endswith(".csv")
-    #         )
+            st.download_button(
+                label="Export Pivot Data",
+                file_name=xl_filename,
+                mime="text/csv",
+                data=tc_df.to_csv(index=True, header=True, encoding="utf-8"),
+                disabled=not xl_filename.endswith(".csv")
+            )
 
-    #         # def download_ppt_on_click(html_response)
+            # def download_ppt_on_click(html_response)
 
-    #         pptx_filename = st.text_input(
-    #             label="Input a filename for your PowerPoint file.",
-    #             placeholder="charter_plot.pptx"
-    #         )
+            pptx_filename = st.text_input(
+                label="Input a filename for your PowerPoint file.",
+                placeholder="charter_plot.pptx"
+            )
             
-    #         if not pptx_filename:
-    #             pptx_filename = "charter_plot.pptx"
+            if not pptx_filename:
+                pptx_filename = "charter_plot.pptx"
 
-    #         # st.download_button(
-    #         #     label="Generate and Download PPTX",
-    #         #     file_name=pptx_filename,
-    #         #     mime="application/vnd.openxmlformats-officedocument.presentationml.presentation",
-    #         #     data=call_thinkcell_server(tc_json) if st.session_state.run_thinkcell else None,
-    #         #     disabled=not pptx_filename.endswith(".pptx")
-    #         # )
+            # st.download_button(
+            #     label="Generate and Download PPTX",
+            #     file_name=pptx_filename,
+            #     mime="application/vnd.openxmlformats-officedocument.presentationml.presentation",
+            #     data=call_thinkcell_server(tc_json) if st.session_state.run_thinkcell else None,
+            #     disabled=not pptx_filename.endswith(".pptx")
+            # )
 
-    #         generate, download = st.columns(2)
-    #         with generate:
-    #             generate_button = st.button("Generate PowerPoint")
+            generate, download = st.columns(2)
+            with generate:
+                generate_button = st.button("Generate PowerPoint")
                 
 
-    #         with download:
-    #             if generate_button:
-    #                 if pptx_filename.endswith(".pptx"):
-    #                     pptx_data = call_thinkcell_server(tc_json)
-    #                     st.download_button(
-    #                         label="Download PowerPoint",
-    #                         file_name=pptx_filename,
-    #                         mime="application/vnd.openxmlformats-officedocument.presentationml.presentation",
-    #                         data=pptx_data
-    #                     )
-    #                 else:
-    #                     st.error("Filename must end with .pptx")
+            with download:
+                if generate_button:
+                    if pptx_filename.endswith(".pptx"):
+                        pptx_data = call_thinkcell_server(tc_json)
+                        st.download_button(
+                            label="Download PowerPoint",
+                            file_name=pptx_filename,
+                            mime="application/vnd.openxmlformats-officedocument.presentationml.presentation",
+                            data=pptx_data
+                        )
+                    else:
+                        st.error("Filename must end with .pptx")
 
 else:
     st.write("No files have been uploaded yet.")
