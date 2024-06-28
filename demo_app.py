@@ -299,6 +299,12 @@ if st.session_state.file_uploaded:
 
     with plot_col:
         st.subheader("Results")
+        st.selectbox(
+            label="Select Chart Type",
+            options=["stack", "100%"],
+            index=0,
+            key="barchart_type"
+        )
         if st.session_state.independent_dd: # and st.session_state.filter_multi_select != []:
             df = load_data(data_file)
             print(df.columns)
@@ -353,7 +359,8 @@ if st.session_state.file_uploaded:
             fig, sub_df = create_bar_plot(
                 df=df,
                 ivar=independent_var,
-                dvar=dependent_var
+                dvar=dependent_var,
+                chart_type=st.session_state.barchart_type
             )
 
             if "plotly_figure" not in st.session_state:

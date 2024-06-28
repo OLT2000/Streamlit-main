@@ -125,7 +125,7 @@ def type_helper(variable):
             raise TypeError(f"Cannot determine appropriate dtype of {var}.\nVariable is of type {type(var)}")
         
 
-def create_bar_plot(df: pd.DataFrame, ivar, dvar=None):
+def create_bar_plot(df: pd.DataFrame, ivar, chart_type, dvar=None):
     if not ivar.is_column:
         # warning(f"Compatibility for multi-select independent variables not yet developed.")
 
@@ -147,7 +147,20 @@ def create_bar_plot(df: pd.DataFrame, ivar, dvar=None):
             # "values": ivar.encodings
         })
 
-        fig = px.bar(grouped_df, x="rows", y='count', color="values", text='count', color_discrete_sequence=colors)
+        grouped_df.info()
+
+        if chart_type == "100%":
+            # Calculate the sum of counts for each "rows" group
+            grouped_df['total'] = grouped_df.groupby('rows')['count'].transform('sum')
+
+            # Calculate the percentage contribution
+            grouped_df['percentage'] = ((grouped_df['count'] / grouped_df['total']) * 100).round(2)
+            y_column = "percentage"
+
+        else:
+            y_column = "count"
+
+        fig = px.bar(grouped_df, x="rows", y=y_column, color="values", text='count', color_discrete_sequence=colors)
         # fig.update_layout(legend_title_text=dvar.question_text)
 
     else:
