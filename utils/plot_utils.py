@@ -46,6 +46,7 @@ def generate_thinkcell_json(data: pd.DataFrame, ivar, template_path, dvar: Optio
     if dvar:
         secondary_col = dvar.columns[0]
         chart_title = dvar.question_text
+        print(data.head())
         pivot_table = data.pivot(columns=primary_col, index=secondary_col).fillna(0)
         fill_colours = colors
 
@@ -198,20 +199,21 @@ def type_helper(variable):
 
 def process_analyses(df: pd.DataFrame, ivar, dvar, chart_type, chart_template):
     assert len(ivar.columns) == 1, "WRONG"
+    independent_column = ivar.columns[0]
 
     if dvar is None:
-        grouped_df = df[ivar.columns].dropna().value_counts().reset_index()
+        grouped_df = df[independent_column].dropna().value_counts().reset_index()
 
         if grouped_df.empty:
             return "No Data Found, Please Try Another Question.", None, None
 
         if ivar.encodings:
-            grouped_df[ivar.columns] = grouped_df[ivar.columns].astype(str)
-            grouped_df.replace({ivar.columns[0]: ivar.encodings}, inplace=True)
+            grouped_df[independent_column] = grouped_df[independent_column].astype(str)
+            grouped_df.replace({independent_column: ivar.encodings}, inplace=True)
 
         if chart_type == "100%":
             # Calculate the sum of counts for each "rows" group
-            grouped_df['total'] = grouped_df.groupby(ivar.columns[0])['count'].transform('sum')
+            grouped_df['total'] = grouped_df.groupby(independent_column)['count'].transform('sum')
 
             # Calculate the percentage contribution
             grouped_df['percentage'] = (((grouped_df['count'] / grouped_df['total']) * 100).round(2)).astype(str) + "%"
@@ -220,9 +222,18 @@ def process_analyses(df: pd.DataFrame, ivar, dvar, chart_type, chart_template):
         else:
             y_column = "count"
 
-        fig = px.bar(grouped_df.astype(str), x=ivar.columns[0], y=y_column, text=y_column, color_discrete_sequence=colors)
+        if any(len(string) >= 50 for string in grouped_df[independent_column]):
+            independent_column, y_column = y_column, independent_column
+            text_column = independent_column
+            chart_orientation = "h"
 
-        fig.update_xaxes(title=ivar.question_text)
+        else:
+            text_column = y_column
+            chart_orientation = "v"
+
+        fig = px.bar(grouped_df.astype(str), x=independent_column, y=y_column, text=text_column, color_discrete_sequence=colors, orientation=chart_orientation)
+
+        # fig.update_xaxes(title=ivar.question_text)
 
         output_df = grouped_df.loc[:, [ivar.columns[0], "count"]]
     
@@ -237,13 +248,14 @@ def process_analyses(df: pd.DataFrame, ivar, dvar, chart_type, chart_template):
                     [ivar.columns[0], dvar.columns[0]]
                 ).size()\
                 .reset_index(name="count")\
-                .sort_values(by=[ivar.columns[0], "count"], ascending=[True, False])\
-                .replace({ivar.columns[0]: ivar.encodings, dvar.columns[0]: dvar.encodings})
+                # .sort_values(by=[ivar.columns[0], "count"], ascending=[True, False])\
+                # .replace({ivar.columns[0]: ivar.encodings, dvar.columns[0]: dvar.encodings})
         
         if grouped_df.empty:
             return "No Data Found, Please Try Another Question.", None, None
         
         if ivar.encodings:
+            # if len(ivar.encodings)
             grouped_df[ivar.columns] = grouped_df[ivar.columns].astype(str)
             grouped_df.replace({ivar.columns[0]: ivar.encodings}, inplace=True)
 
@@ -262,19 +274,30 @@ def process_analyses(df: pd.DataFrame, ivar, dvar, chart_type, chart_template):
         else:
             y_column = "count"
 
+        if any(len(string) >= 50 for string in grouped_df[independent_column]):
+            independent_column, y_column = y_column, independent_column
+            text_column = independent_column
+            chart_orientation = "h"
+
+        else:
+            text_column = y_column
+            chart_orientation = "v"
+
+        print(set(grouped_df[y_column].values))
         # The below makes the horizontal charts
         # ind_column, y_column = y_column, ind_column
         fig = px.bar(
             grouped_df.astype(str),
-            x=ivar.columns[0],
+            x=independent_column,
             y=y_column,
             color=dvar.columns[0],
-            text=y_column,
+            text=text_column,
             color_discrete_sequence=colors,
+            orientation=chart_orientation
         )
 
-        fig.update_layout(legend_title_text=dvar.question_text)
-        fig.update_xaxes(title=ivar.question_text)
+        # fig.update_layout(legend_title_text=dvar.question_text)
+        # fig.update_xaxes(title=ivar.question_text)
 
         output_df = grouped_df.loc[:, [ivar.columns[0], dvar.columns[0], "count"]]
 

@@ -9,6 +9,21 @@ from streamlit import cache_data
 
 import openpyxl.worksheet
 import openpyxl.worksheet.worksheet
+from collections import Counter
+
+
+def check_and_replace_dict(d):
+    # Count the occurrences of each value in the dictionary
+    value_counts = Counter(d.values())
+    
+    # Check if all values are unique
+    if all(count == 1 for count in value_counts.values()):
+        # If all values are unique, return the original dictionary
+        return d
+    else:
+        # If there are non-unique values, replace the dictionary with one mapping keys to themselves
+        print(d)
+        return {k: k for k in d}
 
 
 # Define our Regular Expressions
@@ -122,6 +137,7 @@ def process_atheneum_schema(excel_file, sheet_name = "Datamap"):
         else:
             # The cell below the table key should be the encoding/field type
             if first_cell.row == cleaned_keys[current_key]["schema_row_start"] + 1:
+                cleaned_keys[current_key]["field_type"] = first_cell.value
                 field_type = regex.search(value_match_regex, first_cell.value)
                 if field_type:
                     value_map_range = field_type.group(0).split("-")
@@ -135,11 +151,16 @@ def process_atheneum_schema(excel_file, sheet_name = "Datamap"):
                             for code_row in schema_sheet.iter_rows(min_col=2, max_col=3, min_row=encoding_start_row, max_row=encoding_end_row)
                         ]
 
-                        cleaned_keys[current_key]["encodings"] = dict(encodings_table)
+                        encodings_map = dict(encodings_table)
+
+                        cleaned_keys[current_key]["encodings"] = check_and_replace_dict(encodings_map)
 
                     else:
                         print(f"Found Non-Numeric Value Map '{field_type.group(0)}' for {current_key}. Skipping.")
                         continue
+
+                else:
+                    cleaned_keys[current_key]["encodings"] = None
 
                 if cleaned_keys[current_key]["is_column"]:
                     cleaned_keys[current_key]["related_columns"] = [current_key]
