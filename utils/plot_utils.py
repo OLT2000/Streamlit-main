@@ -41,8 +41,72 @@ colors = colour_mappings[current_selection]
 
 
 def generate_thinkcell_json(data: pd.DataFrame, ivar, template_path, dvar: Optional[Any] = None):
+    # Can probably put the pivots into a separate function and then call them in the main process function. 
+    primary_col = ivar.columns[0]
     if dvar:
-        pivot_table = data.pivot
+        secondary_col = dvar.columns[0]
+        chart_title = dvar.question_text
+        pivot_table = data.pivot(columns=primary_col, index=secondary_col).fillna(0)
+        fill_colours = colors
+
+    else:
+        chart_title = ivar.question_text
+        pivot_table = data.set_index(primary_col).T
+        fill_colours = [colors[0]]
+
+    pivot_table.sort_values(by=pivot_table.columns[0], ascending=False, inplace=True)
+
+    init_row_tc = [
+        {type_helper(primary_col): primary_col},
+        *[
+            {type_helper(i): i} for i in pivot_table.columns.get_level_values(primary_col).values.tolist()
+        ]
+    ]
+
+    thinkcell_table_data = []
+    if len(pivot_table) > len(fill_colours):
+        warning("Run Out Of Colours To Choose From. Defaulting to Grey.")
+        # raise IndexError("More variables than colours available")
+    
+    for idx, row in enumerate(pivot_table.iloc[::].to_records()):
+        row = row.tolist()
+
+        label, *values = row
+
+        if idx >= len(fill_colours):
+            colour = "#A3A3A3"
+        else:
+            colour = fill_colours[idx]
+        tc_row = [
+            {type_helper(label): label},
+            *[
+                {type_helper(el): el, "fill": colour} for el in values
+            ]
+        ]
+
+        thinkcell_table_data.append(tc_row)
+    
+    thinkcell_chart = {
+        "name": "BarChart",
+        "table": [
+            init_row_tc, [], *thinkcell_table_data[::-1]
+        ]
+    }
+
+    tc_template = [
+        {
+            "template": template_path,
+            "data": [
+                {
+                    "name": "BarChartTitle",
+                    "table": [[{"string": chart_title}]] 
+                },
+                thinkcell_chart
+            ]
+        }
+    ]
+
+    return tc_template, pivot_table
 
 
 def df_to_thinkcell_json(data: pd.DataFrame, primary_col: str, template_path: str, secondary_col: Optional[str]) -> str | Dict:
@@ -131,6 +195,98 @@ def type_helper(variable):
         else:
             raise TypeError(f"Cannot determine appropriate dtype of {var}.\nVariable is of type {type(var)}")
         
+
+def process_analyses(df: pd.DataFrame, ivar, dvar, chart_type, chart_template):
+    assert len(ivar.columns) == 1, "WRONG"
+
+    if dvar is None:
+        grouped_df = df[ivar.columns].dropna().value_counts().reset_index()
+
+        if grouped_df.empty:
+            return "No Data Found, Please Try Another Question.", None, None
+
+        if ivar.encodings:
+            grouped_df[ivar.columns] = grouped_df[ivar.columns].astype(str)
+            grouped_df.replace({ivar.columns[0]: ivar.encodings}, inplace=True)
+
+        if chart_type == "100%":
+            # Calculate the sum of counts for each "rows" group
+            grouped_df['total'] = grouped_df.groupby(ivar.columns[0])['count'].transform('sum')
+
+            # Calculate the percentage contribution
+            grouped_df['percentage'] = (((grouped_df['count'] / grouped_df['total']) * 100).round(2)).astype(str) + "%"
+            y_column = "percentage"
+
+        else:
+            y_column = "count"
+
+        fig = px.bar(grouped_df.astype(str), x=ivar.columns[0], y=y_column, text=y_column, color_discrete_sequence=colors)
+
+        fig.update_xaxes(title=ivar.question_text)
+
+        output_df = grouped_df.loc[:, [ivar.columns[0], "count"]]
+    
+    else:
+        assert len(dvar.columns) == 1
+
+        # Filter out rows where either ivar.columns[0] or dvar.columns[0] have NA values
+        filtered_df = df[df[ivar.columns[0]].notna() & df[dvar.columns[0]].notna()]
+
+        # Group by the specified columns, count the occurrences, and sort the values
+        grouped_df = filtered_df.groupby(
+                    [ivar.columns[0], dvar.columns[0]]
+                ).size()\
+                .reset_index(name="count")\
+                .sort_values(by=[ivar.columns[0], "count"], ascending=[True, False])\
+                .replace({ivar.columns[0]: ivar.encodings, dvar.columns[0]: dvar.encodings})
+        
+        if grouped_df.empty:
+            return "No Data Found, Please Try Another Question.", None, None
+        
+        if ivar.encodings:
+            grouped_df[ivar.columns] = grouped_df[ivar.columns].astype(str)
+            grouped_df.replace({ivar.columns[0]: ivar.encodings}, inplace=True)
+
+        if dvar.encodings:
+            grouped_df[dvar.columns] = grouped_df[dvar.columns].astype(str)
+            grouped_df.replace({dvar.columns[0]: dvar.encodings}, inplace=True)
+
+        if chart_type == "100%":
+            # Calculate the sum of counts for each "rows" group
+            grouped_df['total'] = grouped_df.groupby("rows")['count'].transform('sum')
+
+            # Calculate the percentage contribution
+            grouped_df['percentage'] = (((grouped_df['count'] / grouped_df['total']) * 100).round(2)).astype(str) + "%"
+            y_column = "percentage"
+
+        else:
+            y_column = "count"
+
+        # The below makes the horizontal charts
+        # ind_column, y_column = y_column, ind_column
+        fig = px.bar(
+            grouped_df.astype(str),
+            x=ivar.columns[0],
+            y=y_column,
+            color=dvar.columns[0],
+            text=y_column,
+            color_discrete_sequence=colors,
+        )
+
+        fig.update_layout(legend_title_text=dvar.question_text)
+        fig.update_xaxes(title=ivar.question_text)
+
+        output_df = grouped_df.loc[:, [ivar.columns[0], dvar.columns[0], "count"]]
+
+    thinkcell_json, thinkcell_data = generate_thinkcell_json(
+        data=output_df,
+        ivar=ivar,
+        dvar=dvar,
+        template_path=chart_template
+    )
+
+    return fig, thinkcell_json, thinkcell_data
+
 
 def create_bar_plot(df: pd.DataFrame, ivar, chart_type, dvar=None):
     if not ivar.is_column:

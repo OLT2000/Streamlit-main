@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import List
 import openpyxl.workbook
 import regex
+from streamlit import cache_data
 
 import openpyxl.worksheet
 import openpyxl.worksheet.worksheet
@@ -63,6 +64,7 @@ def clean_excel_row(row: tuple) -> None:
             cell.value = None
 
 
+@cache_data
 def process_atheneum_schema(excel_file, sheet_name = "Datamap"):
 # def process_atheneum_schema(schema_sheet: openpyxl.worksheet.worksheet.Worksheet) -> dict:
     wb = load_workbook(excel_file)
@@ -160,7 +162,7 @@ def process_atheneum_schema(excel_file, sheet_name = "Datamap"):
                         else:
                             row_id, row_text = non_null_row
                             question_rows[row_id[1:-1]] = {
-                                "row_number": row_id.rsplit("r", 1)[-1],
+                                "row_number": row_id[1:-1].rsplit("r", 1)[-1],
                                 "row_text": row_text
                             }
                         

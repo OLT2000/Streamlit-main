@@ -319,19 +319,6 @@ if st.session_state.file_uploaded:
         # independent_mappings = independent_table["encodings"]
 
         # TODO: Move the variable assignment to the dropdowns column, so the warning locations are better.
-        if st.session_state.dependent_dd:
-            dependent_id = st.session_state.dropdown_selections[st.session_state.dependent_dd]
-            dependent_var = Variable(
-                variable_id=dependent_id,
-                variable_metadata=st.session_state.question_schema[dependent_id]
-            )
-        
-        else:
-            dependent_var = None
-
-        if not independent_var.is_column:
-            if dependent_var:
-                plot_container.warning("Independent Variable is a Multi-Select Question. Dependent Variable will be ignored.")
 
 
         #     dep_table_key = 
