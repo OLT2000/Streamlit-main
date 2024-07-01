@@ -132,7 +132,7 @@ data_file = st.file_uploader("Upload some survey data", type=EXCEL_EXTENSIONS)
 # schema_file = st.file_uploader("Upload a schema to support your analysis.", type=("json"), disabled=not schema_flag)
 
 if data_file is not None:
-    test_url = data_file._file_urls.upload_url
+    # test_url = data_file._file_urls.upload_url
     # print(test_url)
     # with open(test_url, "r") as f:
     #     print(len(f))
@@ -177,45 +177,51 @@ st.header("Analysis Page")
 
 if st.session_state.file_uploaded:
     st.write("The data and schema files have been uploaded and are available for analysis.")
-    filter_col, plot_col, export_col = st.columns([0.25, 0.5, 0.25], gap="medium")
+    filter_col, plot_col = st.columns([0.25, 0.75], gap="medium")
     with filter_col:
-        st.subheader("Settings")
+        filter_container = st.container()
+        export_container = st.container()
+
+    with plot_col:
+        plot_container = st.container()
+    
+    filter_container.subheader("Settings")
         # Set Up
         # TODO: Consider doing this at the start of loading the page
         
 
-        reset_col, swap_col = st.columns(2)
-        with reset_col:
-            analysis_reset = st.button(
-                label="Reset Analysis?",
-            )
+    reset_col, swap_col = filter_container.columns(2)
+    with reset_col:
+        analysis_reset = st.button(
+            label="Reset Analysis?",
+        )
 
-        if analysis_reset:
-            st.session_state.pop("independent_dd")
-            st.session_state.pop("dependent_dd")   
-        
-        if "independent_dd" not in st.session_state:
-            st.session_state.independent_dd = None
+    if analysis_reset:
+        st.session_state.pop("independent_dd")
+        st.session_state.pop("dependent_dd")   
+    
+    if "independent_dd" not in st.session_state:
+        st.session_state.independent_dd = None
 
-        if "dependent_dd" not in st.session_state:
-            st.session_state.dependent_dd = None
+    if "dependent_dd" not in st.session_state:
+        st.session_state.dependent_dd = None
 
-        with swap_col:
-            data_transpose = st.button(
-                "Swap Variables?",
-                disabled=st.session_state.dependent_dd is None or st.session_state.independent_dd is None
-            )
+    with swap_col:
+        data_transpose = st.button(
+            "Swap Variables?",
+            disabled=st.session_state.dependent_dd is None or st.session_state.independent_dd is None
+        )
 
         if data_transpose:
             st.session_state.independent_dd, st.session_state.dependent_dd = st.session_state.dependent_dd, st.session_state.independent_dd
         
-        st.selectbox(
-            label="Select your Independent Variable",
-            options=list(st.session_state.dropdown_selections.keys()),
-            index=None,
-            key="independent_dd",
-            on_change=on_change_independent_var
-        )
+    filter_container.selectbox(
+        label="Select your Independent Variable",
+        options=list(st.session_state.dropdown_selections.keys()),
+        index=None,
+        key="independent_dd",
+        on_change=on_change_independent_var
+    )
 
         # if st.session_state.independent_dd:
         #     independent_variables = load_data(data_file, _usecols=st.session_state.independent_dd)[st.session_state.independent_dd].unique().tolist()
@@ -244,12 +250,12 @@ if st.session_state.file_uploaded:
         #         on_change=multi_select_all
         #     )
 
-        st.selectbox(
-            "Select an Optional Dependent Variable",
-            options=[c for c in st.session_state.dropdown_selections.keys() if c != st.session_state.independent_dd],
-            index=None,
-            key="dependent_dd",
-        )
+    filter_container.selectbox(
+        "Select an Optional Dependent Variable",
+        options=[c for c in st.session_state.dropdown_selections.keys() if c != st.session_state.independent_dd],
+        index=None,
+        key="dependent_dd",
+    )
 
         # st.selectbox(
         #     label="Select a Question to Analyse.",
@@ -287,125 +293,117 @@ if st.session_state.file_uploaded:
         #     key="question_sub_field"
         # )
 
-            
+    # with plot_col:
+    plot_container.subheader("Results")
+    plot_container.selectbox(
+        label="Select Chart Type",
+        options=["stack", "100%"],
+        index=0,
+        key="barchart_type"
+    )
+    if st.session_state.independent_dd: # and st.session_state.filter_multi_select != []:
+        df = load_data(data_file)
+        print(df.columns)
 
-    with plot_col:
-        st.subheader("Results")
-        st.selectbox(
-            label="Select Chart Type",
-            options=["stack", "100%"],
-            index=0,
-            key="barchart_type"
+        # count_df = df[st.session_state.independent_dd].value_counts().reset_index()
+        # TODO: Turn into a class so we can feed one variable to the function
+        independent_id = st.session_state.dropdown_selections[st.session_state.independent_dd]
+        independent_var = Variable(
+            variable_id=independent_id,
+            variable_metadata=st.session_state.question_schema[independent_id]
         )
-        if st.session_state.independent_dd: # and st.session_state.filter_multi_select != []:
-            df = load_data(data_file)
-            print(df.columns)
 
-            # count_df = df[st.session_state.independent_dd].value_counts().reset_index()
-            # TODO: Turn into a class so we can feed one variable to the function
-            independent_id = st.session_state.dropdown_selections[st.session_state.independent_dd]
-            independent_var = Variable(
-                variable_id=independent_id,
-                variable_metadata=st.session_state.question_schema[independent_id]
+        # independent_table_key = 
+        # independent_table = 
+        # independent_variable = independent_table["related_columns"][0]
+        # independent_mappings = independent_table["encodings"]
+
+        # TODO: Move the variable assignment to the dropdowns column, so the warning locations are better.
+        if st.session_state.dependent_dd:
+            dependent_id = st.session_state.dropdown_selections[st.session_state.dependent_dd]
+            dependent_var = Variable(
+                variable_id=dependent_id,
+                variable_metadata=st.session_state.question_schema[dependent_id]
             )
+        
+        else:
+            dependent_var = None
 
-            # independent_table_key = 
-            # independent_table = 
-            # independent_variable = independent_table["related_columns"][0]
-            # independent_mappings = independent_table["encodings"]
-
-            # TODO: Move the variable assignment to the dropdowns column, so the warning locations are better.
-            if st.session_state.dependent_dd:
-                dependent_id = st.session_state.dropdown_selections[st.session_state.dependent_dd]
-                dependent_var = Variable(
-                    variable_id=dependent_id,
-                    variable_metadata=st.session_state.question_schema[dependent_id]
-                )
-            
-            else:
-                dependent_var = None
-
-            if not independent_var.is_column:
-                if dependent_var:
-                    st.warning("Independent Variable is a Multi-Select Question. Dependent Variable will be ignored.")
+        if not independent_var.is_column:
+            if dependent_var:
+                plot_container.warning("Independent Variable is a Multi-Select Question. Dependent Variable will be ignored.")
 
 
-            #     dep_table_key = 
-            #     dep_table = st.session_state.question_schema[dep_table_key]
-            #     dep_variable = dep_table["related_columns"][0]
-            #     dep_mappings = dep_table["encodings"]
+        #     dep_table_key = 
+        #     dep_table = st.session_state.question_schema[dep_table_key]
+        #     dep_variable = dep_table["related_columns"][0]
+        #     dep_mappings = dep_table["encodings"]
 
-            # else:
-            #     dep_variable = None
+        # else:
+        #     dep_variable = None
 
-            # fig, sub_df = create_bar_chart(
-            #     df=df,
-            #     primary_var=independent_variable,
-            #     secondary_var=dep_variable,
-            #     primary_values=None,#independent_variables,
-            #     barmode="stack",
-            #     mappings=independent_mappings
-            # )
+        # fig, sub_df = create_bar_chart(
+        #     df=df,
+        #     primary_var=independent_variable,
+        #     secondary_var=dep_variable,
+        #     primary_values=None,#independent_variables,
+        #     barmode="stack",
+        #     mappings=independent_mappings
+        # )
 
-            fig, sub_df, ind_col, dep_col = create_bar_plot(
-                df=df,
-                ivar=independent_var,
-                dvar=dependent_var,
-                chart_type=st.session_state.barchart_type
-            )
+        fig, sub_df, ind_col, dep_col = create_bar_plot(
+            df=df,
+            ivar=independent_var,
+            dvar=dependent_var,
+            chart_type=st.session_state.barchart_type
+        )
 
-            if "plotly_figure" not in st.session_state:
-                st.session_state.plotly_figure = fig
-
-            else:
-                if st.session_state.plotly_figure != fig:
-                    st.session_state.plotly_figure = fig
-
-            st.plotly_chart(st.session_state.plotly_figure)
-
-            tc_json, tc_df = df_to_thinkcell_json(sub_df, ind_col, st.secrets.get("BARCHART_TEMPLATE"), dep_col)
-            
-            if st.checkbox("Display Pivot data?"):
-                st.subheader("Pivot Data")
-                st.dataframe(tc_df, use_container_width=True, hide_index=False)
+        if "plotly_figure" not in st.session_state:
+            st.session_state.plotly_figure = fig
 
         else:
-            st.write("Please choose an independent variable to start your analysis.")
-    
-    with export_col:
-        st.subheader("Exports")
-        if st.session_state.independent_dd: # and st.session_state.filter_multi_select != []:
-            xl_filename = st.text_input(label="Input a filename for your pivot data.", placeholder="charter_pivot_data.csv")
-            if not xl_filename:
-                xl_filename = "charter_pivot_data.csv"
+            if st.session_state.plotly_figure != fig:
+                st.session_state.plotly_figure = fig
 
-            st.download_button(
-                label="Export Pivot Data",
-                file_name=xl_filename,
-                mime="text/csv",
-                data=tc_df.to_csv(index=True, header=True, encoding="utf-8"),
-                disabled=not xl_filename.endswith(".csv")
-            )
+        plot_container.plotly_chart(st.session_state.plotly_figure)
 
-            # def download_ppt_on_click(html_response)
-
-            pptx_filename = st.text_input(
-                label="Input a filename for your PowerPoint file.",
-                placeholder="charter_plot.pptx"
-            )
+        tc_json, tc_df = df_to_thinkcell_json(sub_df, ind_col, st.secrets.get("BARCHART_TEMPLATE"), dep_col)
             
-            if not pptx_filename:
-                pptx_filename = "charter_plot.pptx"
+        if plot_container.checkbox("Display Pivot data?"):
+            plot_container.subheader("Pivot Data")
+            plot_container.dataframe(tc_df, use_container_width=True, hide_index=False)
+        
+        export_container.subheader("Export")
 
-            # st.download_button(
-            #     label="Generate and Download PPTX",
-            #     file_name=pptx_filename,
-            #     mime="application/vnd.openxmlformats-officedocument.presentationml.presentation",
-            #     data=call_thinkcell_server(tc_json) if st.session_state.run_thinkcell else None,
-            #     disabled=not pptx_filename.endswith(".pptx")
-            # )
+        xl_filename = export_container.text_input(label="Input a filename for your pivot data.", placeholder="charter_pivot_data.csv")
+        if not xl_filename:
+            xl_filename = "charter_pivot_data.csv"
 
-            generate, download = st.columns(2)
+        export_container.download_button(
+            label="Export Pivot Data",
+            file_name=xl_filename,
+            mime="text/csv",
+            data=tc_df.to_csv(index=True, header=True, encoding="utf-8"),
+            disabled=not xl_filename.endswith(".csv")
+        )
+
+        pptx_filename = export_container.text_input(
+            label="Input a filename for your PowerPoint file.",
+            placeholder="charter_plot.pptx"
+        )
+        
+        if not pptx_filename:
+            pptx_filename = "charter_plot.pptx"
+
+            export_container.download_button(
+                label="Generate and Download PPTX",
+                file_name=pptx_filename,
+                mime="application/vnd.openxmlformats-officedocument.presentationml.presentation",
+                data=call_thinkcell_server(tc_json) if st.session_state.run_thinkcell else None,
+                disabled=not pptx_filename.endswith(".pptx")
+            )
+
+            generate, download = export_container.columns(2)
             with generate:
                 generate_button = st.button("Generate PowerPoint")
                 
@@ -422,6 +420,68 @@ if st.session_state.file_uploaded:
                         )
                     else:
                         st.error("Filename must end with .pptx")
+
+
+
+    else:
+        plot_container.write("Please choose an independent variable to start your analysis.")
+    
+    # export_container.subheader("Exports")
+    # if st.session_state.independent_dd: # and st.session_state.filter_multi_select != []:
+    #     xl_filename = st.text_input(label="Input a filename for your pivot data.", placeholder="charter_pivot_data.csv")
+    #     if not xl_filename:
+    #         xl_filename = "charter_pivot_data.csv"
+
+    #     st.download_button(
+    #         label="Export Pivot Data",
+    #         file_name=xl_filename,
+    #         mime="text/csv",
+    #         data=tc_df.to_csv(index=True, header=True, encoding="utf-8"),
+    #         disabled=not xl_filename.endswith(".csv")
+    #     )
+
+        # def download_ppt_on_click(html_response)
+
+        # pptx_filename = st.text_input(
+        #     label="Input a filename for your PowerPoint file.",
+        #     placeholder="charter_plot.pptx"
+        # )
+        
+        # if not pptx_filename:
+        #     pptx_filename = "charter_plot.pptx"
+
+        #     st.download_button(
+        #         label="Generate and Download PPTX",
+        #         file_name=pptx_filename,
+        #         mime="application/vnd.openxmlformats-officedocument.presentationml.presentation",
+        #         data=call_thinkcell_server(tc_json) if st.session_state.run_thinkcell else None,
+        #         disabled=not pptx_filename.endswith(".pptx")
+        #     )
+
+        #     generate, download = st.columns(2)
+        #     with generate:
+        #         generate_button = st.button("Generate PowerPoint")
+                
+
+        #     with download:
+        #         if generate_button:
+        #             if pptx_filename.endswith(".pptx"):
+        #                 pptx_data = call_thinkcell_server(tc_json)
+        #                 st.download_button(
+        #                     label="Download PowerPoint",
+        #                     file_name=pptx_filename,
+        #                     mime="application/vnd.openxmlformats-officedocument.presentationml.presentation",
+        #                     data=pptx_data
+        #                 )
+        #             else:
+        #                 st.error("Filename must end with .pptx")
+
+    
+
+        
+    
+    # with export_col:
+        
 
 else:
     st.write("No files have been uploaded yet.")

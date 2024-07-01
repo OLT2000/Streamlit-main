@@ -136,7 +136,7 @@ def create_bar_plot(df: pd.DataFrame, ivar, chart_type, dvar=None):
     if not ivar.is_column:
         # warning(f"Compatibility for multi-select independent variables not yet developed.")
 
-        df = df.loc[:, ivar.columns].melt(var_name='rows', value_name='values')
+        df = df.loc[:, ivar.columns].melt(var_name=ivar.variable_id, value_name='values')
 
         df = df.loc[df["values"].isin(ivar.encodings.keys())]
 
@@ -192,7 +192,8 @@ def create_bar_plot(df: pd.DataFrame, ivar, chart_type, dvar=None):
 
     # else:
     assert len(ivar.columns) == 1
-    ind_column = ivar.columns[0]
+    # ind_column = ivar.columns[0]
+    ind_column = ivar.variable_id
 
     if not dvar:
         grouped_df = df[ind_column].value_counts().reset_index()
@@ -213,6 +214,7 @@ def create_bar_plot(df: pd.DataFrame, ivar, chart_type, dvar=None):
             assert len(dvar.columns) == 1
             dep_column = dvar.columns[0]
         
+        print(df, ind_column)
         grouped_df = df.groupby(
             [ind_column, dep_column]
         ).size()\
@@ -222,7 +224,7 @@ def create_bar_plot(df: pd.DataFrame, ivar, chart_type, dvar=None):
 
         if chart_type == "100%":
             # Calculate the sum of counts for each "rows" group
-            grouped_df['total'] = grouped_df.groupby('rows')['count'].transform('sum')
+            grouped_df['total'] = grouped_df.groupby(ivar.variable_id)['count'].transform('sum')
 
             # Calculate the percentage contribution
             grouped_df['percentage'] = ((grouped_df['count'] / grouped_df['total']) * 100).round(2)
@@ -232,7 +234,18 @@ def create_bar_plot(df: pd.DataFrame, ivar, chart_type, dvar=None):
             y_column = "count"
 
         print("Two Variables\n", grouped_df.head())
-        fig = px.bar(grouped_df, x=ind_column, y=y_column, color=dep_column, text=y_column, color_discrete_sequence=colors)
+
+        ind_column, y_column = y_column, ind_column
+
+        fig = px.bar(
+            grouped_df,
+            x=ind_column,
+            y=y_column,
+            color=dep_column,
+            text=ind_column,
+            color_discrete_sequence=colors,
+            orientation="h"
+        )
         fig.update_layout(legend_title_text=dvar.question_text)
 
         output_df = grouped_df.loc[:, [ind_column, dep_column, "count"]]

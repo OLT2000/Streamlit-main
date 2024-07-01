@@ -141,6 +141,7 @@ def process_atheneum_schema(excel_file, sheet_name = "Datamap"):
 
                 if cleaned_keys[current_key]["is_column"]:
                     cleaned_keys[current_key]["related_columns"] = [current_key]
+                    # cleaned_keys[current_key][]
 
                 else:
                     row_definition_start = encoding_end_row + 1
