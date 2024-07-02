@@ -69,7 +69,19 @@ def ind_filter_on_click():
 
 def dep_filter_on_click():
     if "All" in st.session_state.dep_filter_multi_select:
-        st.session_state.dep_filter_multi_select = st.session_state.dependent_values
+        st.session_state.dep_filter_multi_select = st.session_state.dependent_values 
+
+
+if "annotations" not in st.session_state:
+    st.session_state.annotations = []
+
+if "bullet_point" not in st.session_state:
+    st.session_state.bullet_point = None
+
+
+def submit_bullet_point():
+    st.session_state.annotations.append(st.session_state.bullet_point)
+    st.session_state.pop("bullet_point")
 
 
 ### UI Menu. Wrap the below in a bigger function.
@@ -111,6 +123,7 @@ if st.session_state.uploaded_file is not None:
     # st.session_state.columns = data.columns.to_list()
 
     st.write("The data and schema files have been uploaded and are available for analysis.")
+    
     filter_col, plot_col = st.columns([0.25, 0.75], gap="medium")
     with filter_col:
         filter_container = st.container()
@@ -311,7 +324,8 @@ if st.session_state.uploaded_file is not None:
             ivar=independent_var,
             dvar=dependent_var,
             chart_type=st.session_state.barchart_type,
-            chart_template=st.secrets.get("BARCHART_TEMPLATE")
+            chart_template=st.secrets.get("BARCHART_TEMPLATE"),
+            # annotations=
         )
 
         if "plotly_figure" not in st.session_state:
@@ -320,6 +334,22 @@ if st.session_state.uploaded_file is not None:
         else:
             if st.session_state.plotly_figure != figure:
                 st.session_state.plotly_figure = figure
+
+        plot_container.text_input(
+            label="Input your analyses here.",
+            max_chars=50,
+            key="bullet_point",
+            on_change=submit_bullet_point
+        )
+
+        annotation_md = "\n".join("- %s" % x for x in st.session_state.annotations if x is not None)
+        plot_container.markdown(annotation_md)
+
+        # plot_container.text_input(
+        #     label="Add a title to your plot.",
+        #     max_chars=50,
+        #     key="chart_title"
+        # )
 
         plot_container.write(st.session_state.plotly_figure)
 
