@@ -241,11 +241,11 @@ def process_analyses(df: pd.DataFrame, ivar, dvar, chart_type, chart_template):
         assert len(dvar.columns) == 1
 
         # Filter out rows where either ivar.columns[0] or dvar.columns[0] have NA values
-        filtered_df = df[df[ivar.columns[0]].notna() & df[dvar.columns[0]].notna()]
+        filtered_df = df[df[independent_column].notna() & df[dvar.columns[0]].notna()]
 
         # Group by the specified columns, count the occurrences, and sort the values
         grouped_df = filtered_df.groupby(
-                    [ivar.columns[0], dvar.columns[0]]
+                    [independent_column, dvar.columns[0]]
                 ).size()\
                 .reset_index(name="count")\
                 # .sort_values(by=[ivar.columns[0], "count"], ascending=[True, False])\
@@ -256,8 +256,8 @@ def process_analyses(df: pd.DataFrame, ivar, dvar, chart_type, chart_template):
         
         if ivar.encodings:
             # if len(ivar.encodings)
-            grouped_df[ivar.columns] = grouped_df[ivar.columns].astype(str)
-            grouped_df.replace({ivar.columns[0]: ivar.encodings}, inplace=True)
+            grouped_df[independent_column] = grouped_df[independent_column].astype(str)
+            grouped_df.replace({independent_column: ivar.encodings}, inplace=True)
 
         if dvar.encodings:
             grouped_df[dvar.columns] = grouped_df[dvar.columns].astype(str)
@@ -265,7 +265,7 @@ def process_analyses(df: pd.DataFrame, ivar, dvar, chart_type, chart_template):
 
         if chart_type == "100%":
             # Calculate the sum of counts for each "rows" group
-            grouped_df['total'] = grouped_df.groupby("rows")['count'].transform('sum')
+            grouped_df['total'] = grouped_df.groupby(independent_column)['count'].transform('sum')
 
             # Calculate the percentage contribution
             grouped_df['percentage'] = (((grouped_df['count'] / grouped_df['total']) * 100).round(2)).astype(str) + "%"
@@ -283,7 +283,6 @@ def process_analyses(df: pd.DataFrame, ivar, dvar, chart_type, chart_template):
             text_column = y_column
             chart_orientation = "v"
 
-        print(set(grouped_df[y_column].values))
         # The below makes the horizontal charts
         # ind_column, y_column = y_column, ind_column
         fig = px.bar(
