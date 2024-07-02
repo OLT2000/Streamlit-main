@@ -143,7 +143,9 @@ if st.session_state.uploaded_file is not None:
 
     if st.session_state.analysis_reset:
         st.session_state.pop("independent_dd")
-        st.session_state.pop("dependent_dd")   
+        st.session_state.pop("dependent_dd")
+        st.session_state.bullet_point = None
+        st.session_state.annotations = []
     
     if "independent_dd" not in st.session_state:
         st.session_state.independent_dd = None
@@ -325,7 +327,7 @@ if st.session_state.uploaded_file is not None:
             dvar=dependent_var,
             chart_type=st.session_state.barchart_type,
             chart_template=st.secrets.get("BARCHART_TEMPLATE"),
-            # annotations=
+            annotations=st.session_state.annotations
         )
 
         if "plotly_figure" not in st.session_state:
@@ -376,6 +378,8 @@ if st.session_state.uploaded_file is not None:
                 label="Input a filename for your PowerPoint file.",
                 placeholder="charter_plot.pptx"
             )
+
+            print(thinkcell_json)
             
             if not pptx_filename:
                 pptx_filename = "charter_plot.pptx"

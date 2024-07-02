@@ -80,7 +80,8 @@ fig.update_layout(
     barmode="stack",
     uniformtext=dict(mode="hide", minsize=10),
 )
-fig.show()
+# fig.write_image("mekko.png")
+
 """
 3. Spider Chart
 A spider chart, or radar chart, is used to compare multiple variables on a two-dimensional plane with a separate axis for each variable.
@@ -263,3 +264,51 @@ fig.update_layout(title_text="Cluster Bar")
 
 fig.show()
 
+"""
+Marimekko #2
+"""
+import plotly.express as px
+import pandas as pd
+
+# Sample data
+data = {
+    'Category': ['A', 'A', 'B', 'B', 'C', 'C'],
+    'Subcategory': ['X', 'Y', 'X', 'Y', 'X', 'Y'],
+    'Value': [5, 10, 10, 20, 20, 30]
+}
+
+df = pd.DataFrame(data)
+
+# Calculate total values for categories and subcategories
+total_category = df.groupby('Category')['Value'].sum().reset_index()
+total_subcategory = df.groupby(['Category', 'Subcategory'])['Value'].sum().reset_index()
+
+# Merge totals with original dataframe
+df = df.merge(total_category, on='Category', suffixes=('', '_total'))
+df = df.merge(total_subcategory, on=['Category', 'Subcategory'], suffixes=('', '_sub_total'))
+
+# Calculate widths and heights
+df['Width'] = df['Value_total'] / df['Value_total'].sum()
+df['Height'] = df['Value'] / df['Value_total']
+
+# Plotting Marimekko chart using Plotly Express
+fig = px.bar(df, 
+             x='Category', 
+             y='Height', 
+             color='Subcategory', 
+             text='Value', 
+             title='Marimekko Chart',
+             width=800, 
+             height=600)
+
+# # Modify bar widths
+# for i, cat in enumerate(df['Category'].unique()):
+#     fig.data[i].width = df[df['Category'] == cat]['Width'].values[0]
+
+# Update layout for better visualization
+fig.update_layout(barmode='stack', 
+                  xaxis={'categoryorder':'total descending'}, 
+                  xaxis_title='Category', 
+                  yaxis_title='Proportion')
+
+fig.show()

@@ -41,7 +41,7 @@ current_selection = "Bain"
 colors = colour_mappings[current_selection]
 
 
-def generate_thinkcell_json(data: pd.DataFrame, ivar, template_path, dvar: Optional[Any] = None):
+def generate_thinkcell_json(data: pd.DataFrame, ivar, template_path, annotations, dvar: Optional[Any] = None):
     # Can probably put the pivots into a separate function and then call them in the main process function. 
     primary_col = ivar.columns[0]
     if dvar:
@@ -100,10 +100,17 @@ def generate_thinkcell_json(data: pd.DataFrame, ivar, template_path, dvar: Optio
             "template": template_path,
             "data": [
                 {
-                    "name": "BarChartTitle",
+                    "name": "ChartTitle",
                     "table": [[{"string": chart_title}]] 
                 },
-                thinkcell_chart
+                thinkcell_chart,
+                {
+                    "name": "Commentary",
+                    "table":[
+                        [
+                            {"string": "\n".join(s for s in annotations if s)} #for point in annotations if point is not None
+                        ] ]
+                }
             ]
         }
     ]
@@ -178,6 +185,8 @@ def df_to_thinkcell_json(data: pd.DataFrame, primary_col: str, template_path: st
         }
     ]
 
+    # if 
+
     # thinkcell_json = json.dumps(tc_template, indent=4)
 
     return tc_template, pivot_table
@@ -198,7 +207,7 @@ def type_helper(variable):
             raise TypeError(f"Cannot determine appropriate dtype of {var}.\nVariable is of type {type(var)}")
         
 
-def process_analyses(df: pd.DataFrame, ivar, dvar, chart_type, chart_template):
+def process_analyses(df: pd.DataFrame, ivar, dvar, chart_type, chart_template, annotations):
     assert len(ivar.columns) == 1, "WRONG"
     independent_column = ivar.columns[0]
 
@@ -306,7 +315,8 @@ def process_analyses(df: pd.DataFrame, ivar, dvar, chart_type, chart_template):
         data=output_df,
         ivar=ivar,
         dvar=dvar,
-        template_path=chart_template
+        template_path=chart_template,
+        annotations=annotations
     )
 
     return fig, thinkcell_json, thinkcell_data
