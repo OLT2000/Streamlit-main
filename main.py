@@ -211,75 +211,87 @@ if st.session_state.uploaded_file is not None:
         data = load_data(st.session_state.uploaded_file)
         
         independent_id = st.session_state.dropdown_selections[st.session_state.independent_dd]
-        if data.loc[:, independent_id].dropna().empty:
-            plot_container.warning(f"Independent Variable '{st.session_state.independent_dd}' contains no data.")
-            st.session_state.ifilter_disabled = True
-
-        else:
-            st.session_state.ifilter_disabled = False
-
         independent_var = Variable(
             variable_id=independent_id,
             variable_metadata=st.session_state.question_schema[independent_id]
         )
 
-        st.session_state.independent_values = data.loc[:, independent_id].dropna().unique().tolist()
-        if independent_var.encodings:
-            reverse_i_map = {value: key for key, value in independent_var.encodings.items()}
-            st.session_state.independent_values = [independent_var.encodings[str(item)] for item in st.session_state.independent_values]
-
-        else:
-            reverse_i_map = None
-
-        independent_container.multiselect(
-            label="",
-            default=st.session_state.independent_values,
-            options=["All"] + st.session_state.independent_values,
-            disabled = st.session_state.independent_dd is None or st.session_state.ifilter_disabled,
-            key="ind_filter_multi_select",
-            on_change=ind_filter_on_click
-        )
-
-        if independent_var.is_column and st.session_state.dependent_dd:
-            dependent_id = st.session_state.dropdown_selections[st.session_state.dependent_dd]
-            independent_id = st.session_state.dropdown_selections[st.session_state.independent_dd]
-            if data.loc[:, dependent_id].dropna().empty:
-                plot_container.warning(f"Dependent Variable '{st.session_state.dependent_dd}' contains no data.")
-                st.session_state.dfilter_disabled = True
+        if independent_var.is_column:
+            if data.loc[:, independent_id].dropna().empty:
+                plot_container.warning(f"Independent Variable '{st.session_state.independent_dd}' contains no data.")
+                st.session_state.ifilter_disabled = True
 
             else:
-                st.session_state.dfilter_disabled = False
+                st.session_state.ifilter_disabled = False
+            st.session_state.independent_values = data.loc[:, independent_id].dropna().unique().tolist()
+            if independent_var.encodings:
+                reverse_i_map = {value: key for key, value in independent_var.encodings.items()}
+                st.session_state.independent_values = [independent_var.encodings[str(item)] for item in st.session_state.independent_values]
 
-            dependent_var = Variable(
-                variable_id=dependent_id,
-                variable_metadata=st.session_state.question_schema[dependent_id]
+            else:
+                reverse_i_map = None
+
+            independent_container.multiselect(
+                label="",
+                default=st.session_state.independent_values,
+                options=["All"] + st.session_state.independent_values,
+                disabled = st.session_state.independent_dd is None or st.session_state.ifilter_disabled,
+                key="ind_filter_multi_select",
+                on_change=ind_filter_on_click
             )
 
-            if not dependent_var.is_column:
-                plot_container.warning(f"The multi-select question '{dependent_var.question_text}' is not supported for a dependent variable.")
+            if st.session_state.dependent_dd:
+                dependent_id = st.session_state.dropdown_selections[st.session_state.dependent_dd]
+                independent_id = st.session_state.dropdown_selections[st.session_state.independent_dd]
+                if data.loc[:, dependent_id].dropna().empty:
+                    plot_container.warning(f"Dependent Variable '{st.session_state.dependent_dd}' contains no data.")
+                    st.session_state.dfilter_disabled = True
+
+                else:
+                    st.session_state.dfilter_disabled = False
+
+                dependent_var = Variable(
+                    variable_id=dependent_id,
+                    variable_metadata=st.session_state.question_schema[dependent_id]
+                )
+
+                if not dependent_var.is_column:
+                    plot_container.warning(f"The multi-select question '{dependent_var.question_text}' is not supported for a dependent variable.")
+                    dependent_var = None
+
+                st.session_state.dependent_values = data.loc[:, dependent_id].dropna().unique().tolist()
+                if dependent_var.encodings:
+                    reverse_d_map = {value: key for key, value in dependent_var.encodings.items()}
+                    st.session_state.dependent_values = [dependent_var.encodings[str(item)] for item in st.session_state.dependent_values]
+
+                else:
+                    reverse_d_map = None
+
+                dependent_container.multiselect(
+                    label="",
+                    default=st.session_state.dependent_values,
+                    options=["All"] + st.session_state.dependent_values,
+                    disabled = st.session_state.dependent_dd is None or st.session_state.dfilter_disabled,
+                    key="dep_filter_multi_select",
+                    on_change=dep_filter_on_click
+                )
+            
+            else:
                 dependent_var = None
 
-            st.session_state.dependent_values = data.loc[:, dependent_id].dropna().unique().tolist()
-            if dependent_var.encodings:
-                reverse_d_map = {value: key for key, value in dependent_var.encodings.items()}
-                st.session_state.dependent_values = [dependent_var.encodings[str(item)] for item in st.session_state.dependent_values]
+            if dependent_var:
+                df = data[
+                    (data[independent_id].isin([int(reverse_i_map[value]) for value in st.session_state.ind_filter_multi_select])) &
+                    (data[dependent_id].isin([int(reverse_d_map[value]) for value in st.session_state.dep_filter_multi_select]))
+                ]
 
             else:
-                reverse_d_map = None
+                df = data[
+                    data[independent_id].isin([int(reverse_i_map[value]) for value in st.session_state.ind_filter_multi_select])
+                ]
 
-            dependent_container.multiselect(
-                label="",
-                default=st.session_state.dependent_values,
-                options=["All"] + st.session_state.dependent_values,
-                disabled = st.session_state.dependent_dd is None or st.session_state.dfilter_disabled,
-                key="dep_filter_multi_select",
-                on_change=dep_filter_on_click
-            )
 
-        elif independent_var.is_column and st.session_state.dependent_dd is None:
-            dependent_var = None
-
-        elif not independent_var.is_column:
+        else:
             if st.session_state.dependent_dd:
                 plot_container.warning(f"Independent Variable '{independent_var.question_text}' is a Multi-Select Question. Dependent Variable will be ignored.")
 
@@ -305,22 +317,83 @@ if st.session_state.uploaded_file is not None:
                 }
             )
 
-            data = data.loc[:, temp_var.columns].melt(
+            df = data.loc[:, temp_var.columns].melt(
                 var_name="rows",
                 value_name="values"
             )
 
-        if dependent_var:
-            df = data[
-                (data[independent_id].isin([int(reverse_i_map[value]) for value in st.session_state.ind_filter_multi_select])) &
-                (data[dependent_id].isin([int(reverse_d_map[value]) for value in st.session_state.dep_filter_multi_select]))
-            ]
 
-        else:
-            df = data[
-                data[independent_id].isin([int(reverse_i_map[value]) for value in st.session_state.ind_filter_multi_select])
-            ]
+        # if independent_var.is_column and st.session_state.dependent_dd:
+        #     dependent_id = st.session_state.dropdown_selections[st.session_state.dependent_dd]
+        #     independent_id = st.session_state.dropdown_selections[st.session_state.independent_dd]
+        #     if data.loc[:, dependent_id].dropna().empty:
+        #         plot_container.warning(f"Dependent Variable '{st.session_state.dependent_dd}' contains no data.")
+        #         st.session_state.dfilter_disabled = True
 
+        #     else:
+        #         st.session_state.dfilter_disabled = False
+
+        #     dependent_var = Variable(
+        #         variable_id=dependent_id,
+        #         variable_metadata=st.session_state.question_schema[dependent_id]
+        #     )
+
+        #     if not dependent_var.is_column:
+        #         plot_container.warning(f"The multi-select question '{dependent_var.question_text}' is not supported for a dependent variable.")
+        #         dependent_var = None
+
+        #     st.session_state.dependent_values = data.loc[:, dependent_id].dropna().unique().tolist()
+        #     if dependent_var.encodings:
+        #         reverse_d_map = {value: key for key, value in dependent_var.encodings.items()}
+        #         st.session_state.dependent_values = [dependent_var.encodings[str(item)] for item in st.session_state.dependent_values]
+
+        #     else:
+        #         reverse_d_map = None
+
+        #     dependent_container.multiselect(
+        #         label="",
+        #         default=st.session_state.dependent_values,
+        #         options=["All"] + st.session_state.dependent_values,
+        #         disabled = st.session_state.dependent_dd is None or st.session_state.dfilter_disabled,
+        #         key="dep_filter_multi_select",
+        #         on_change=dep_filter_on_click
+        #     )
+
+        # elif independent_var.is_column and st.session_state.dependent_dd is None:
+        #     dependent_var = None
+
+        # elif not independent_var.is_column:
+        #     if st.session_state.dependent_dd:
+        #         plot_container.warning(f"Independent Variable '{independent_var.question_text}' is a Multi-Select Question. Dependent Variable will be ignored.")
+
+        #     dependent_var = Variable(
+        #         "values",
+        #         variable_metadata={
+        #             "question_text": "values",
+        #             "related_columns": ["values"],
+        #             "is_column": True,
+        #             "encodings": independent_var.encodings
+        #         }
+        #     )
+
+        #     temp_var = independent_var
+
+        #     independent_var = Variable(
+        #         variable_id=temp_var.variable_id,
+        #         variable_metadata={
+        #             "question_text": temp_var.question_text,
+        #             "related_columns": ["rows"],
+        #             "is_column": True,
+        #             "encodings": {key: value["row_text"] for key, value in temp_var.rows.items()}
+        #         }
+        #     )
+
+        #     data = data.loc[:, temp_var.columns].melt(
+        #         var_name="rows",
+        #         value_name="values"
+        #     )
+
+        
         figure, thinkcell_json, thinkcell_data = process_analyses(
             df=df,
             ivar=independent_var,
