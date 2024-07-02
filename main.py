@@ -411,7 +411,7 @@ if st.session_state.uploaded_file is not None:
                 st.session_state.plotly_figure = figure
 
         plot_container.text_input(
-            label="Input your analyses here.",
+            label="Input your analyses here. Press enter to submit a bullet point.",
             max_chars=50,
             key="bullet_point",
             on_change=submit_bullet_point
