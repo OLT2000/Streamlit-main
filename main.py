@@ -61,6 +61,17 @@ st.set_page_config(page_title="CHARTER", layout="wide")
 if "analysis_reset" not in st.session_state:
     st.session_state.analyis_reset = False
 
+
+def ind_filter_on_click():
+    if "All" in st.session_state.ind_filter_multi_select:
+        st.session_state.ind_filter_multi_select = st.session_state.independent_values
+
+
+def dep_filter_on_click():
+    if "All" in st.session_state.dep_filter_multi_select:
+        st.session_state.dep_filter_multi_select = st.session_state.dependent_values
+
+
 ### UI Menu. Wrap the below in a bigger function.
 # Shared UI elements
 st.title("Charter")
@@ -136,8 +147,11 @@ if st.session_state.uploaded_file is not None:
 
         if st.session_state.data_transpose:
             st.session_state.independent_dd, st.session_state.dependent_dd = st.session_state.dependent_dd, st.session_state.independent_dd
-        
-    filter_container.selectbox(
+    
+    independent_container = filter_container.container()
+    dependent_container = filter_container.container()
+    
+    independent_container.selectbox(
         label="Select your Independent Variable",
         options=list(st.session_state.dropdown_selections.keys()),
         index=None,
@@ -145,7 +159,25 @@ if st.session_state.uploaded_file is not None:
         on_change=on_change_independent_var
     )
 
-    filter_container.selectbox(
+    
+    # if st.session_state.independent_dd:
+    #     independent_variables = load_data(st.session_state.uploaded_file, _usecols=st.session_state.independent_dd)[st.session_state.independent_dd].unique().tolist()
+    #     default_filter_values = independent_variables
+    #     filter_options = ["All"] + independent_variables
+    #     filter_container.multiselect(
+    #         label="",
+    #         default=default_filter_values,
+    #         options=filter_options,
+    #         disabled = st.session_state.independent_dd is None,
+    #         key="filter_multi_select",
+    #         on_change=ind_filter_on_click
+    #     )
+    
+    # else:
+    #     filter_options = []
+    #     default_filter_values = None
+
+    dependent_container.selectbox(
         "Select an Optional Dependent Variable",
         options=[c for c in st.session_state.dropdown_selections.keys() if c != st.session_state.independent_dd],
         index=None,
@@ -164,22 +196,70 @@ if st.session_state.uploaded_file is not None:
         data = load_data(st.session_state.uploaded_file)
         
         independent_id = st.session_state.dropdown_selections[st.session_state.independent_dd]
+        if data.loc[:, independent_id].dropna().empty:
+            plot_container.warning(f"Independent Variable '{st.session_state.independent_dd}' contains no data.")
+            st.session_state.ifilter_disabled = True
+
+        else:
+            st.session_state.ifilter_disabled = False
 
         independent_var = Variable(
             variable_id=independent_id,
             variable_metadata=st.session_state.question_schema[independent_id]
         )
 
+        st.session_state.independent_values = data.loc[:, independent_id].dropna().unique().tolist()
+        if independent_var.encodings:
+            reverse_i_map = {value: key for key, value in independent_var.encodings.items()}
+            st.session_state.independent_values = [independent_var.encodings[str(item)] for item in st.session_state.independent_values]
+
+        else:
+            reverse_i_map = None
+
+        independent_container.multiselect(
+            label="",
+            default=st.session_state.independent_values,
+            options=["All"] + st.session_state.independent_values,
+            disabled = st.session_state.independent_dd is None or st.session_state.ifilter_disabled,
+            key="ind_filter_multi_select",
+            on_change=ind_filter_on_click
+        )
+
         if independent_var.is_column and st.session_state.dependent_dd:
             dependent_id = st.session_state.dropdown_selections[st.session_state.dependent_dd]
+            independent_id = st.session_state.dropdown_selections[st.session_state.independent_dd]
+            if data.loc[:, dependent_id].dropna().empty:
+                plot_container.warning(f"Dependent Variable '{st.session_state.dependent_dd}' contains no data.")
+                st.session_state.dfilter_disabled = True
+
+            else:
+                st.session_state.dfilter_disabled = False
 
             dependent_var = Variable(
                 variable_id=dependent_id,
                 variable_metadata=st.session_state.question_schema[dependent_id]
             )
+
             if not dependent_var.is_column:
                 plot_container.warning(f"The multi-select question '{dependent_var.question_text}' is not supported for a dependent variable.")
                 dependent_var = None
+
+            st.session_state.dependent_values = data.loc[:, dependent_id].dropna().unique().tolist()
+            if dependent_var.encodings:
+                reverse_d_map = {value: key for key, value in dependent_var.encodings.items()}
+                st.session_state.dependent_values = [dependent_var.encodings[str(item)] for item in st.session_state.dependent_values]
+
+            else:
+                reverse_d_map = None
+
+            dependent_container.multiselect(
+                label="",
+                default=st.session_state.dependent_values,
+                options=["All"] + st.session_state.dependent_values,
+                disabled = st.session_state.dependent_dd is None or st.session_state.dfilter_disabled,
+                key="dep_filter_multi_select",
+                on_change=dep_filter_on_click
+            )
 
         elif independent_var.is_column and st.session_state.dependent_dd is None:
             dependent_var = None
@@ -215,8 +295,19 @@ if st.session_state.uploaded_file is not None:
                 value_name="values"
             )
 
+        if dependent_var:
+            df = data[
+                (data[independent_id].isin([int(reverse_i_map[value]) for value in st.session_state.ind_filter_multi_select])) &
+                (data[dependent_id].isin([int(reverse_d_map[value]) for value in st.session_state.dep_filter_multi_select]))
+            ]
+
+        else:
+            df = data[
+                data[independent_id].isin([int(reverse_i_map[value]) for value in st.session_state.ind_filter_multi_select])
+            ]
+
         figure, thinkcell_json, thinkcell_data = process_analyses(
-            df=data,
+            df=df,
             ivar=independent_var,
             dvar=dependent_var,
             chart_type=st.session_state.barchart_type,
@@ -286,6 +377,10 @@ else:
     if "analysis_button" in st.session_state:
         st.session_state.pop("analysis_button")
 
+    st.session_state.independent_values = []
+    st.session_state.ifilter_disabled = True
+    st.session_state.dependent_values = []
+    st.session_state.dfilter_disabled = True
 
 
 

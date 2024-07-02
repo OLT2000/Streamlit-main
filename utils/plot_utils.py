@@ -1,4 +1,5 @@
 import plotly.express as px
+from plotly import graph_objects as go
 import pandas as pd
 import json
 from numpy import unique
@@ -203,6 +204,7 @@ def process_analyses(df: pd.DataFrame, ivar, dvar, chart_type, chart_template):
 
     if dvar is None:
         grouped_df = df[independent_column].dropna().value_counts().reset_index()
+        print(grouped_df, independent_column)
 
         if grouped_df.empty:
             return "No Data Found, Please Try Another Question.", None, None
@@ -273,7 +275,7 @@ def process_analyses(df: pd.DataFrame, ivar, dvar, chart_type, chart_template):
 
         else:
             y_column = "count"
-
+        
         if any(len(string) >= 50 for string in grouped_df[independent_column]):
             independent_column, y_column = y_column, independent_column
             text_column = independent_column
